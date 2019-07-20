@@ -1,0 +1,990 @@
+
+(function($){
+
+    // 问答帖根据标签插入学院课程
+    !function(){
+        if (window.special === '3') {
+            var tags = '';
+            $(".zl_tag").children().each(function(){
+                tags += $.trim($(this).text()) + ',';
+            });
+            if (tags) {
+                $.ajax({
+                    url: 'http://t.elecfans.com/api/apiGetTeachByTag',
+                    data: {tags: tags,format: 'jsonp'},
+                    dataType: 'jsonp',
+                    success: function(m) {
+                        if (m.status === 'successed' && m.data[0]) {
+                            var data = m.data[0];
+                            $("#postlist>.posts:eq(1)").find('.message_box:first').append('<a href="'+ data.url +'?elecfans_trackid=bbsreply" target="_blank" style="font-size: 14px;font-weight: 700;">'+ data.title +'</a>')
+                        }
+                    }
+                });
+            }
+        }
+    }();
+
+	var Uid = $("#Uid").val();
+    //推荐取消推荐主题
+    $("body").on("click",".tuijian",function(){
+    	if( Uid != 0 ){
+        var hash = $(this).attr("data-hash");
+        var tid = $(this).attr("data-tid");
+        var that = $(this);
+        $.ajax({
+            type:"get",
+            url:"/forum.php?",
+            data :{
+                'mod': 'ajax',
+                'action' : 'recommend',
+                'do' : "add",
+                'ajaxdata' : 'json',
+                'hash': hash ,
+                'tid': tid
+            },
+            complete:function(res){
+                if( res.status == 200 && res.readyState == 4 ){
+                    var data = JSON.parse(res.responseText);
+                    if( data.data.code == 2 ){
+                        $(".tuijian").each(function(){
+                            $(this).removeClass("click_check_recommend");
+                            $(this).next().text( $(this).next().text()/1 - 1);
+                            $(this).text("推荐");
+                        });
+                    }else if( data.data.code == 1 ){
+                        $(".tuijian").each(function(){
+                            $(this).addClass("click_check_recommend");
+                            $(this).next().text( $(this).next().text()/1 + 1);
+                            $(this).text("已推荐");
+                        });
+                    }else{
+                        if(data.message == "您需要先登录才能继续本操作"){
+                            showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+                        } else {
+                        	showMsg(data.message);
+                        }
+                    }
+                }
+            }
+        });
+        }else{
+    		showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+    	}
+    });
+
+    //取消加收藏
+    $("body").on("click",".k_favorite",function(){
+    	if( Uid != 0  ){
+	        var tid = $(this).attr("data-tid");
+	        var hash = $(this).attr("data-hash");
+	        if($(".k_favorite").hasClass("click_check")){
+	            $.ajax({
+	                type:"get",
+	                url:"/home.php?",
+	                data :{
+	                    'mod': 'spacecp',
+	                    'ac' : 'favorite',
+	                    'type' : "thread",
+	                    "op" : "delete",
+	                    'checkall' : 1,
+	                    "ajaxdata" : 'json',
+	                    'formhash' : hash ,
+	                    'id': tid
+	                },
+	                complete:function(res){
+	                    if( res.status == 200 && res.readyState == 4 ){
+	                    	var data = JSON.parse(res.responseText);
+	                    	if(data.data.length != 0){
+	                    		$(".k_favorite").each(function(){
+		                            $(this).removeClass("click_check");
+		                            $(this).next().text( $(this).next().text()/1 - 1);
+		                            $(this).find('img').attr('src','/template/elecfans_201805/images/zl_icon/favorite.png');
+		                        });
+	                    	}else{
+	                    		showMsg(data.message);
+	                    	}
+	                    }
+	                }
+	            });
+	        }else{
+	            $.ajax({
+	                type:"get",
+	                url:"/home.php?",
+	                data :{
+	                    'mod': 'spacecp',
+	                    'ac' : 'favorite',
+	                    'type' : "thread",
+	                    "ajaxdata" : 'json',
+	                    'formhash' : hash ,
+	                    'id': tid
+	                },
+	                complete:function(res){
+	                    if( res.status == 200 && res.readyState == 4 ){
+	                    	var data = JSON.parse(res.responseText);
+	                    	if(data.data.length != 0){
+		                        $(".k_favorite").each(function(){
+		                            $(this).addClass("click_check");
+		                            $(this).next().text( $(this).next().text()/1 + 1);
+		                            $(this).find('img').attr('src','/template/elecfans_201805/images/zl_icon/favorite_on.png');
+		                        });
+	                        }else{
+	                    		if(data.message == "您需要先登录才能继续本操作"){
+	                                showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+	                            } else {
+	                                showMsg(data.message);
+	                            }
+	                    	}
+	                    }
+	                }
+	            });
+	        }
+	    }else{
+    		showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+    	}
+    });
+
+	//
+	// $(".k_favorite").mouseover(function(){
+	// 	if(!$(this).hasClass('click_check')){
+	// 		$(this).find('img').attr('src','/template/elecfans_201805/images/zl_icon/favorite_h.png');
+	// 	}
+	// }).mouseleave(function(){
+	// 	if(!$(this).hasClass('click_check')){
+	// 		$(this).find('img').attr('src','/template/elecfans_201805/images/zl_icon/favorite.png');
+	// 	}
+	// })
+
+    //tab选择卡切换
+    $("body").on("mouseover",".tab_down", function(){
+    	$(this).addClass("tab_active").siblings().removeClass("tab_active");
+    	$(".list_box ul").eq($(this).index()).show().siblings().hide();
+    });
+
+    var is_hide = 0;
+    $(".avatar").mouseleave(function(){
+        setTimeout(function(){
+            if( is_hide == 0 ){
+                $(".p_pop").hide();
+            }
+        },500);
+        $(".p_pop").mouseover(function(){
+            is_hide = 1;
+        }).mouseleave(function(){
+            is_hide = 0;
+        });
+    });
+
+
+    // 根据uid获取用户头像
+    var getHost = window.location.host;
+    getHost = getHost.substring(getHost.indexOf("."), getHost.length); //获得二级域名
+	function getAvatar(uid,size){
+		size = size || 'middle';
+		var str = '00000000' + uid;
+		return 'http://bbs'+getHost+'/uc_server/data/avatar/' + str.slice(-9, -6) + '/' + str.slice(-6, -4) + '/' + str.slice(-4, -2) + '/' + str.slice(-2) + '_avatar_' + size + '.jpg?v='+Math.random();
+	};
+
+
+    //显示消息
+
+    function showMsg(msg){
+        if(typeof(showError)=="function"){
+            showError(msg);
+        }
+        else{
+            layer.msg(msg)
+        }
+    }
+    /*
+    * 检查登录态，并弹窗
+    * */
+    function checkLogin(){
+        if( Uid != 0 ) {
+        	return true;
+        }else{
+        	showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+            return false;
+        }
+
+    }
+
+
+
+    //  回复的区域的
+
+    var askForm =  $("#ask_form");
+    /*获取表单原始信息*/
+    var askType =0;/*判断是评论还是回复*/
+    var fcid = 0;
+    var topid = 0;
+    var originFont = '请输入评论...';
+    var originAct = askForm.attr('action');
+    /*点击回复输入框显示回复人*/
+   $(".reply-cate").click(function(e){
+   		if( Uid != 0  ){
+	        $('.reply-form').hide();
+	        $(this).parents('.reply-box').find('.reply-form').show();
+	        e.stopPropagation();
+	        askType =1;
+	        var data_id = $(this).attr('data-id');
+	        if( data_id.indexOf("+") == -1 ){
+	            fcid = data_id;
+	            topid = data_id;
+	        }else{
+	            fcid = data_id.split("+")[0];
+	            topid = data_id.split("+")[1];
+	        }
+
+	        var getName = $(this).attr('data-name');
+	        $(this).parents('.reply-box').find('.reply-form').find('.reply-ipt').attr('placeholder','回复：'+getName).val("").focus();
+    	}else{
+    		showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+    	}
+   	});
+
+    $("body").click(function(){
+        askType =0;
+        fcid = 0 ;
+        topid = 0;
+        $('.reply-form').hide();
+        $("#fastpostmessage2,.reply-form .reply-ipt").attr('placeholder',originFont);
+    });
+    /*
+    * 记录原始输入框的提交地址
+    * */
+    var replyAct = [];
+    $("#answer-list>li").each(function(){
+        replyAct[$(this).index()] = $(this).find('.reply-form').attr('action');
+    });
+
+    $(".reply-box form,#ask_form,.reply-right").click(function(e){
+        e.stopPropagation();
+    });
+
+    $("#ask_form,.reply-form").submit(function(){
+        var getForm=$(this);
+        var getBtn=getForm.find("[type=submit]");
+        //判断是否可点或者登录
+        if(getBtn.hasClass("disabled") || !checkLogin()){
+            return false;
+        }
+
+
+        $("[name=topid]").val(topid);
+        $("[name=fcid]").val(fcid);
+
+        var getData=getForm.serializeArray();
+        //验证表单
+        var s=null;
+        for(var i in getData){
+            var getOne=getData[i];
+            var getName=getOne["name"];
+            var getValue=getOne["value"];
+            switch (getName){
+                case "subject":
+                    if(getValue.length>160){
+                        s="您的标题超过160字符限制"
+                    }
+                    break;
+                case "message":
+                    if(getValue==""){
+                        s="抱歉，请输入内容";
+                    }
+                    else if(getValue.length<5){
+                        s="您的内容不能少于5个字符"
+                    }
+                    else if(getValue.length>5000){
+                        s="您的内容不能超过5000字符限制"
+                    }
+                    break;
+                default:break;
+            }
+            if(!!s){
+                showMsg(s);
+                return false;
+            }
+        }
+
+        var getUrl=getForm.attr("action");
+        var getBtnTxt=getBtn.html();
+        $.ajax({
+            url:getUrl,
+            type:"post",
+            data:getData,
+            dataType:"json",
+            beforeSend:function(){
+                getBtn.attr("disabled","disabled").html("请稍等...");
+            },
+            success:function(res){
+                var getData=res["data"];
+                var getMsg=res["message"] || res["msg"];
+                console.log(getData);
+                getForm.parent().find("ul").css({
+                    "height" : "auto",
+                    "overflow": "auto"
+                });
+                if(getForm.parent().find(".reply_more_show")){
+                    getForm.parent().find(".reply_more_show").hide();
+                }
+                //提交问题成功
+                if(!!getData["pid"]){
+                    var author =   getData.from_username;
+                    var message =  getForm.find('[name=message]');
+                    var is_type_tl = getForm.parent().hasClass("reply_tl");
+                        if(askType==0){
+                            /*添加答案*/
+                           if( is_type_tl ){
+                             var setHtml ='<li class="clearfix" style="padding-bottom: 20px;">'+
+                                            '<div class="reply-left ">'+
+                                                '<div class="avatar">'+
+                                                    '<a href="home.php?mod=space&uid='+getData.from_uid+'" class="avtm" target="_blank">'+
+                                                        '<img src="'+getAvatar(getData.from_uid)+'">'+
+                                                    '</a>'+
+                                                '</div>'+
+                                                '<p><a href="home.php?mod=space&uid='+getData.from_uid+'">'+getData.from_username+'</a>'+
+                                                '<span> 刚刚</span></p>'+
+                                                '<p style="margin-left: 40px;">'+getData.comment+'</p>'+
+                                            '</div>'+
+                                        '</li>';
+                           }else{
+                             var setHtml ='<li class="clearfix">'+
+                              '  <div class="reply-left">'+
+                              '      <p><a href="home.php?mod=space&uid='+getData.from_uid+'">'+getData.from_username+'</a>'+
+                              '      <span> 刚刚</span></p>'+
+                              '      <p>'+getData.comment+'</p>'+
+                              '   </div>'+
+                              '  </li>';
+                           }
+                           if(getForm.parent().find("ul").length > 0){
+                                getForm.parent().find("ul").append(setHtml);
+                           }else{
+                                getForm.before('<ul>'+setHtml+'</ul>');
+                           }
+                           if( is_type_tl ){
+                           		var replyNum = parseInt(getForm.parent().parent().parent().find(".show-replay span").html());
+		                        replyNum = replyNum/1 + 1/1;
+		                       	if(getForm.parent().prev(".down_title").length > 0 ){
+		                       		getForm.parent().prev(".down_title").html(replyNum+" 条评论");
+		                       		getForm.parent().parent().parent().find(".show-replay span").html(replyNum);
+		                       	}else{
+		                       		getForm.parent().before('<div class="down_title" style="font-size: 14px;"><b>1  条评论</b></div>')
+		                       		getForm.parent().parent().parent().find(".show-replay span").html(1);
+		                       	}
+                           }
+                        }else{
+                            /*添加答案回复*/
+                            $(".reply-right .reply-cate").each(function(){
+                                var this_dataId = $(this).attr('data-id');
+                                var this_fcid = this_dataId.indexOf("+") == -1 ? this_dataId : this_dataId.split("+")[0];
+                                if( this_fcid == fcid ){
+                                    var r_htm = '<div class="reply-left">'+
+                                                 '<a href="home.php?mod=space&uid='+getData.from_uid+'">'+getData.from_username+'</a><span> 回复 </span><a href="home.php?mod=space&uid='+getData.to_uid+'">'+getData.to_username+'</a><span> 刚刚</span>'+
+                                                   '<p>'+getData.comment+'</p>'+
+                                                '</div>'
+                                    if( is_type_tl ){
+                                        if( this_dataId.indexOf("+") == -1 ){
+                                            $(this).parents().next('.c_reply_box').append('<div class="clearfix" style="background: #FAFAFA;padding: 10px 0px;">'+
+                                                r_htm +
+                                              ' </div>');
+                                        }else{
+                                            $(this).parents('.c_reply_box').append('<div class="clearfix" style="background: #FAFAFA;padding: 10px 0px;">'+
+                                                 r_htm +
+                                              ' </div>');
+                                        }
+                                    }else{
+                                        $(this).parents('li.clearfix').after('<li class="clearfix">'+
+                                          '  <div class="reply-left">'+
+                                             r_htm +
+                                              ' </li>');
+                                    }
+                                }
+                            });
+                        }
+                        getForm.find('[name=message]').val("");
+                        if( !is_type_tl ){
+                        	var replyNum = $.trim(parseInt(getForm.parent().parent().parent().find(".show-replay span").html()))>0?parseInt(getForm.parent().parent().parent().find(".show-replay span").html()) : 0;
+	                        replyNum = replyNum +1;
+	                        getForm.parent().parent().parent().find(".show-replay span").html(replyNum);
+                        }
+                    getForm.find('button').removeClass('willSend');
+                }
+                //提交失败
+                else if(!!getMsg){
+                    showMsg(getMsg);
+                }
+                else{
+                    showMsg("出错了！");
+                }
+            },
+            complete:function(){
+                getBtn.removeAttr("disabled").html(getBtnTxt);
+            }
+        });
+        return false;
+    });
+    /*提交按钮添加样式*/
+    $("#ask_form .lf,.reply-form .reply-ipt").keyup(function(){
+       if($(this).val()!=""){
+           $(this).siblings('button').addClass('willSend')
+       }else{
+           $(this).siblings('button').removeClass('willSend')
+       }
+    });
+    /* 点击回复显示评论框  */
+   $(".show-replay").each(function(index){
+        $(this).click(function(e){
+        	if( Uid != 0  ){
+        		e.stopPropagation();
+	            askType =0;
+	            fcid = 0 ;
+	            topid = 0;
+	            $('.reply-form').hide();
+	            $('.reply-form').eq(index).show();
+	            $('.reply-form').eq(index).find('.reply-ipt').focus();
+	            $("#fastpostmessage2,.reply-form .reply-ipt").attr('placeholder',originFont);
+        	}
+        });
+   });
+    /*获取页面的hash值*/
+    var getHash = '&hash='+$("#hash").val();
+
+
+    $(".user-box").each(function(e){
+        var _this = $(this);
+
+        var thisId =  $(this).attr('data-id') || 1;
+        /*判断是否加载过用户信息*/
+        if(!_this.attr('data-load')){
+            _this.attr('data-load','1');
+
+            $.ajax({
+                url:'/forum.php?mod=ajax&action=ask_usercard&ajaxdata=json&uid='+thisId,
+                dataType:'json',
+                success:function(data){
+                  /*获取用户参数*/
+                    var getData = data.data.userdata;
+                    var isFollow = getData.is_follow,
+                        avatar  = getData.avatar,
+                        company = getData.company,
+                        position = getData.position,
+                        _uid = getData.uid,
+                        userLink = '/user/'+_uid,
+                        threads = getData.threads,
+                        extcredits = getData.extcredits3,
+                        credits = getData.credits,
+                        articles = getData.articles,
+                        follower = getData.follower,
+                        grouptitle = getData.grouptitle,
+                        is_vip = getData.is_vip,
+                        username = getData.username;
+                    var getUid = _uid;
+                    var talkUrl='/home.php?mod=spacecp&ac=pm&op=showmsg&handlekey=showmsg_'+getUid+'&touid='+getUid+'&pmid=0&daterange=2';
+                    /*判断是否已关注*/
+                     if(isFollow>0){
+                        var attenTxt = '<div  data-id="'+getUid+'" class="attend remove-follow lf">已关注</div>'
+                    }else{
+                        var attenTxt = '<div class="attend creat-follow lf"  data-id="'+getUid+'">+关注</div>'
+                    }
+                    /*判断公司名和职位显示*/
+                    if(position && company){
+                        var peoMsg = '<span>'+position+' '+company+'</span>';
+                    }else{
+                        var peoMsg = '<span>'+position+company+'</span>';
+                    }
+                    if(is_vip > 0){
+                        var vipLogo = '<img src="template/elecfans_201805/images/vip_icon.png" style="position: absolute;top: 21px; width:16px">'
+                    } else {
+                        var vipLogo = ""
+                    }
+                    var usermedals = ''
+                    for(var index in getData.usermedals){
+                         usermedals += getData.usermedals[index]
+                    }
+                        _this.parent().find(".p_pop").html('<div class="avatar">'+
+                                '<a  href="'+userLink+'" target="_blank"><img src="'+avatar+'"></a>'+
+                            '</div>'+
+                            '<p style="line-height: 18px;"><a href="'+userLink+'" target="_blank" class="xw1" style="position:relative; font-size: 14px; color: #333;">'+username+'</a>&nbsp;&nbsp;'+vipLogo+'</p>'+
+                            '<p style="line-height: 18px;white-space:nowrap;overflow: hidden;text-overflow: ellipsis;min-height: 22px"><a target="_blank" class="xw1 popUserName">'+peoMsg +'</a></p>'+
+                            '<p class="user_team"></p>'+
+                            '<p class="usermedals" style="display:flex; align-items: center;color:#999;font-size: 12px;">'+grouptitle+"&nbsp;&nbsp;"+usermedals+'</p>'+
+                            '<p style="border-bottom: 1px solid #E4E4E4;font-size:12px;">积分：<span class="mr10" style="color:#d22222;margin-right: 20px;font-size: 12px;">'+extcredits+'</span>经验：<span style="color:#d22222;font-size: 12px;">'+threads+'</span></p>'+
+                            '<div class="user_msg_num" style="">'+
+                                '<ul>'+
+                                    '<li>'+
+                                        '<p style="font-size:12px;">主题</p>'+
+                                        '<h5 style="font-size:12px; color: #333; font-weight: bold; ">'+credits+'</h5>'+
+                                    '</li>'+
+                                    '<li>'+
+                                        '<p style="font-size:12px;">文章</p>'+
+                                        '<h5 style="font-size:12px; color: #333; font-weight: bold;">'+articles+'</h5>'+
+                                    '</li>'+
+                                    '<li>'+
+                                        '<p style="font-size:12px;">关注者</p>'+
+                                        '<h5 style="font-size:12px; color: #333; font-weight: bold;">'+follower+'</h5>'+
+                                    '</li>'+
+                                '</ul>'+
+                            '</div>'+
+                            '<div class="user_msg_btn">'+
+                                ( thisId != uid ?
+                                    attenTxt+'<a onclick="showWindow(\'showMsgBox\','+"'"+talkUrl+"'"+',\'get\', 0)">发私信</a>' :
+                                    ""
+                                )+
+                            '</div>')
+                    /*判断下拉框的位置*/
+                    if(_this.hasClass('clearfix')){
+                        _this.find('.hot-des').css({'top':30,'left':-45});
+                    }
+
+                }
+            });
+        }
+    });
+
+    $(".user-box").each(function(){
+    	$(this).mouseover(function(){
+    		$(this).parent().find(".p_pop").show();
+    	}).mouseleave(function(){
+    		$(this).parent().find(".p_pop").mouseleave(function(){
+    			$(this).parent().find(".p_pop").hide();
+    		})
+    	});
+    });
+
+    /*下拉信息框阻止冒泡跳转*/
+    $(document).on('click',function(e){
+       $(".invite-box").hide();
+    });
+    $(document).on('click','.hot-des,.invite-box,.invite-box,.invite-enter',function(e){
+        e.stopPropagation();
+    });
+    $(".invite-enter").click(function(){
+        $(".invite-box").show();
+    });
+    $(".close-invite").click(function(e){
+        e.stopPropagation();
+        $(".invite-box").hide();
+    });
+    /*邀请回答*/
+    $(".invite-btn").click(function(e){
+    	if( Uid != 0 ){
+	        e.stopPropagation();
+	        e.preventDefault();
+	        var _this = $(this);
+	        var getUrl = $(this).attr('href');
+	        $.ajax({
+	            url:getUrl,
+	            dataType:'json',
+	            success:function(res){
+	                if(res.data.status=='successed'){
+	                    _this.html('已邀请').removeClass('invite-btn').addClass('invited-btn');
+	                }else{
+	                    layer.msg(res.message);
+	                }
+	            }
+
+	        })
+        }else{
+    		showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+    	}
+    });
+
+    /*关注别人或者取消*/
+    $(".p_pop").on('click','.attend',function(e){
+        //判断资料是否完善
+        var pop_this = this
+        if (isPerfectInfo($, pop_this)) {
+
+        } else {
+            return false;
+        }
+    	if( Uid != 0 ){
+	        var getId = $(this).attr('data-id');
+	        var that = $(this);
+	        if( $(this).text() == "+关注"){
+	            $.ajax({
+	                    type:"get",
+	                    url:"/infocenter.php?",
+	                    data :{
+	                        'mod': 'spacecp',
+	                        'ac' : 'follow',
+	                        'do' : "support",
+	                        "op" : "add" ,
+	                        'fuid' : getId,
+	                        'hash' : $("#hash").val(),
+	                        'ajaxdata' : 'json'
+	                    },
+	                    complete:function(res){
+	                        if( res.status == 200 && res.readyState == 4 ){
+	                            var data = JSON.parse(res.responseText);
+	                            that.css({
+	                                "background-color": "#ccc",
+	                                "color": "#333"
+	                            });
+	                            that.text("已关注");
+	                        }
+	                    }
+	            });
+	        }else if( $(this).text() == "已关注" ){
+	            $.ajax({
+	                    type:"get",
+	                    url:"/infocenter.php?",
+	                    data :{
+	                        'mod': 'spacecp',
+	                        'ac' : 'follow',
+	                        "op" : "del",
+	                        'fuid' : getId,
+	                        'hash' : $("#hash").val(),
+	                        'ajaxdata' : 'json'
+	                    },
+	                    complete:function(res){
+	                        if( res.status == 200 && res.readyState == 4 ){
+	                            var data = JSON.parse(res.responseText);
+	                            that.css({
+	                                "background-color": "#ff9933",
+	                                "color": "#fff"
+	                            });
+	                            that.text("+关注");
+	                        }
+	                    }
+	            });
+	        }
+        }else{
+    		showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+    	}
+    });
+
+    function showReplyInput(index, e){
+        e.stopPropagation();
+        askType =0;
+        fcid = 0 ;
+        topid = 0;
+        $('.reply-form').hide();
+        $('.reply-form').eq(index).show();
+        $('.reply-form').eq(index).find('.reply-ipt').focus();
+        $("#fastpostmessage2,.reply-form .reply-ipt").attr('placeholder',originFont);
+   }
+    $(".self_reply").each(function(index){
+    	if( $(this).hasClass("reply_tl")){
+    		$(this).find("li.clearfix").each(function(){
+//  			if( $(this).find("div.clearfix").length > 5 ){
+//		            $(this).append("<div style='height: 40px; background: #FBFAFA;width:566px; margin-left: 30px;padding:0 20px;'>"+
+//		            				"<p class='addReply' style='float: left;color: #d22222; font-size: 13px;cursor: pointer'>添加回复</p><p class='reply_more_show'><span>展开全部&nbsp;<img src='/static/image/task/arrow.png' style='width: 15px;position: relative;top: 2px;'/></span></p></div>")
+//		            $(this).find(".c_reply_box").css({
+//		                "height" : "300px",
+//		                "overflow": "hidden"
+//		            });
+//		        }
+    		});
+    	}else{
+    		if( $(this).find("li").length > 5 ){
+	            $(this).find("ul").after("<div style='height: 40px; background: #FBFAFA;width:100%;'>"+
+	            						 "<p class='addReply' style='float: left;color: #d22222; font-size: 13px;cursor: pointer'>添加回复</p><p class='reply_more_show'><span>展开全部&nbsp;<img src='/static/image/task/arrow.png' style='width: 15px;position: relative;top: 2px;'/></span></p></div>")
+	            $(this).find("ul").css({
+	                "height" : "500px",
+	                "overflow": "hidden"
+	            });
+	        }
+    	}
+        if($(this).find('.addReply').length > 0){
+            $(this).find('.addReply').click(function(e){
+                showReplyInput(index, e)
+            })
+        }
+    });
+
+    $(".show-replay").each(function(index){
+        $(this).click(function(e){
+        	if( Uid != 0 ){
+        		showReplyInput(index, e)
+        	}else{
+        		showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+        	}
+        });
+    })
+
+
+    $(".reply_more_show").each(function(){
+        $(this).find("span").click(function(){
+            $(this).parent().parent().prev().css({
+                "height" : "auto",
+                "overflow": "auto"
+            });
+            $(this).parent().hide();
+        });
+    });
+
+    //评论回复的点赞或者取消点赞
+    $(".reply-dianzan").each(function(){
+        $(this).click(function(){
+            var id = $(this).attr("data-id");
+            var pid = $(this).attr("data-pid");
+            var tid = $(this).attr("data-tid");
+            var that = $(this);
+            $.ajax({
+                type:"get",
+                url:"/forum.php?",
+                data :{
+                    'mod': 'misc',
+                    'action' : 'commentpraise',
+                    'do' : "support",
+                    "id" : id ,
+                    'pid' : pid,
+                    "tid" : tid,
+                    'hash' : $("#hash").val(),
+                    'ajaxdata' : 'json'
+                },
+                complete:function(res){
+                    if( res.status == 200 && res.readyState == 4 ){
+                        var data = JSON.parse(res.responseText);
+                        console.log(data);
+                        if( data.data.status == "successed" ){
+                            if( data.data.code == 1 ){
+                                that.find("em").html('<img src="/template/elecfans_201805/images/zl_icon/zan_on.png">');
+                                that.find("span").text( that.find("span").text()/1 + 1 );
+                            }else if( data.data.code == 2 ){
+                                that.find("em").html('<img src="/template/elecfans_201805/images/zl_icon/zan.png">');
+                                that.find("span").text()/1-1 > 0 ? that.find("span").text( that.find("span").text()/1 - 1 ) : that.find("span").text("");
+                                that.find("span").text()/1-1 > 0 ? that.find("span").text( that.find("span").text()/1 - 1 ) : that.find("span").text("");
+                            }
+                        }else{
+                            if(data.message == "您需要先登录才能继续本操作"){
+                                showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+                            } else {
+                                showMsg(data.message);
+                            }
+                        }
+                    }
+                }
+            });
+        })
+    });
+
+    //评论的点赞或者取消点赞
+    $(".com_dianzan").each(function(){
+        $(this).click(function(){
+            var pid = $(this).attr("data-pid");
+            var tid = $(this).attr("data-tid");
+            var that = $(this);
+            $.ajax({
+                type:"get",
+                url:"/forum.php?",
+                data :{
+                    'mod': 'misc',
+                    'action' : 'postreview',
+                    'do' : "support",
+                    'pid' : pid,
+                    "tid" : tid,
+                    'hash' : $("#hash").val(),
+                    'ajaxdata' : 'json'
+                },
+                complete:function(res){
+                    if( res.status == 200 && res.readyState == 4 ){
+                        var data = JSON.parse(res.responseText);
+                        if(data.data.status == "successed" ){
+                            if( data.data.code == 1 ){
+                                if( that.parent().hasClass("widget-vote")){
+                                    that.parent().css({"background":"#fdf3f3", "border-color": "#EDC3C3"});
+                                    that.find("em").html('<img src="/template/elecfans_201805/images/zl_icon/zhichi_on.png">');
+                                    that.find("span").css("color","#d00");
+                                }else{
+                                    that.find("em").html('<img src="/template/elecfans_201805/images/zl_icon/zan_on.png">');
+                                }
+                                that.find("span").text( that.find("span").text()/1 + 1 );
+                            }else if( data.data.code == 2 ){
+                                if( that.parent().hasClass("widget-vote")){
+                                    that.parent().css({"background":"#fff", "border-color": "#E4E4E4"});
+                                    that.find("span").css("color","#999");
+                                    that.find("em").html('<img src="/template/elecfans_201805/images/zl_icon/zhichi.png">');
+                                    that.find("span").text( that.find("span").text()/1 - 1 );
+                                }else{
+                                    that.find("em").html('<img src="/template/elecfans_201805/images/zl_icon/zan.png">');
+                                    that.find("span").text()/1-1 > 0 ? that.find("span").text( that.find("span").text()/1 - 1 ) : that.find("span").text("");
+                                }
+                            }
+                        }else{
+                            if(data.message == "您需要先登录才能继续本操作"){
+                                showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+                            } else {
+                                showMsg(data.message);
+                            }
+                        }
+                    }
+                }
+            });
+        })
+    });
+
+    //删除回复
+    $(".delete_reply").each(function(){
+    	$(this).click(function(){
+    		var data_Id = $(this).attr("data_Id");
+    		var fid = $(this).attr("data-fid");
+            var tid = $(this).attr("data-tid");
+            var that = $(this);
+    		 $.ajax({
+                type:"post",
+                url:"forum.php?mod=topicadmin&action=delcomment&modsubmit=yes&infloat=yes&modclick=yes&inajax=1&ajaxdata=json",
+                data :{
+                    'formhash' : $("#hash").val(),
+                    'fid' : fid,
+                    "tid" : tid,
+                    'page' :1,
+                    'handlekey' : 'mods',
+                    'topiclist' : data_Id,
+                    'reason' : '',
+                },
+                complete:function(res){
+	                if( res.status == 200 && res.readyState == 4 ){
+	                    var data = JSON.parse(res.responseText);
+	                    showMsg(data.message);
+						location.reload();
+	                  }
+	            }
+    		})
+    	});
+    });
+    //社区之星收藏
+    $(".favorite_stars").each(function(){
+        $(this).click(function(event) {
+            if(Uid != 0){
+                var tid = $(this).attr("data-tid");
+                var hash = $(this).attr("data-hash");
+                var that = this
+                if($(this).hasClass("click_check")){
+                    $.ajax({
+                        type:"get",
+                        url:"/home.php?",
+                        data :{
+                            'mod': 'spacecp',
+                            'ac' : 'favorite',
+                            'type' : "thread",
+                            "op" : "delete",
+                            'checkall' : 1,
+                            "ajaxdata" : 'json',
+                            'formhash' : hash ,
+                            'id': tid
+                        },
+                        complete:function(res){
+                            if( res.status == 200 && res.readyState == 4 ){
+                                var data = JSON.parse(res.responseText);
+                                if(data.data.length != 0){
+                                    $(that).removeClass("click_check");
+                                    $(that).children('img').attr("src", "/template/elecfans_201805/images/u17.png")
+                                    $(that).children('span').text("收藏");
+                                }else{
+                                    showMsg(data.message);
+                                }
+                            }
+                        }
+                    });
+                }else{
+                    $.ajax({
+                        type:"get",
+                        url:"/home.php?",
+                        data :{
+                            'mod': 'spacecp',
+                            'ac' : 'favorite',
+                            'type' : "thread",
+                            "ajaxdata" : 'json',
+                            'formhash' : hash ,
+                            'id': tid
+                        },
+                        complete:function(res){
+                            if( res.status == 200 && res.readyState == 4 ){
+                                var data = JSON.parse(res.responseText);
+                                if(data.data.length != 0){
+                                        $(that).addClass("click_check");
+                                        $(that).children('img').attr("src", "/template/elecfans_201805/images/u166.png")
+                                         $(that).children('span').text("已收藏");
+                                }else{
+                                    if(data.message == "您需要先登录才能继续本操作"){
+                                        showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+                                    } else {
+                                        showMsg(data.message);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+            }
+        });
+    })
+
+
+	    /**
+		* 文本框根据输入内容自适应高度
+		* @param                {HTMLElement}        输入框元素
+		* @param                {Number}                设置光标与输入框保持的距离(默认0)
+		* @param                {Number}                设置最大高度(可选)
+		*/
+		var autoTextarea = function (elem, extra, maxHeight) {
+		        extra = extra || 0;
+		        var isFirefox = !!document.getBoxObjectFor || 'mozInnerScreenX' in window,
+		        isOpera = !!window.opera && !!window.opera.toString().indexOf('Opera'),
+		                addEvent = function (type, callback) {
+		                        elem.addEventListener ?
+		                                elem.addEventListener(type, callback, false) :
+		                                elem.attachEvent('on' + type, callback);
+		                },
+		                getStyle = elem.currentStyle ? function (name) {
+		                        var val = elem.currentStyle[name];
+
+		                        if (name === 'height' && val.search(/px/i) !== 1) {
+		                                var rect = elem.getBoundingClientRect();
+		                                return rect.bottom - rect.top -
+		                                        parseFloat(getStyle('paddingTop')) -
+		                                        parseFloat(getStyle('paddingBottom')) + 'px';
+		                        };
+
+		                        return val;
+		                } : function (name) {
+		                                return getComputedStyle(elem, null)[name];
+		                },
+		                minHeight = parseFloat(getStyle('height'));
+
+		        elem.style.resize = 'none';
+
+		        var change = function () {
+		                var scrollTop, height,
+		                        padding = 0,
+		                        style = elem.style;
+
+		                if (elem._length === elem.value.length) return;
+		                elem._length = elem.value.length;
+
+		                if (!isFirefox && !isOpera) {
+		                        padding = parseInt(getStyle('paddingTop')) + parseInt(getStyle('paddingBottom'));
+		                };
+		                scrollTop = document.body.scrollTop || document.documentElement.scrollTop;
+
+		                elem.style.height = minHeight + 'px';
+		                if (elem.scrollHeight > minHeight) {
+		                        if (maxHeight && elem.scrollHeight > maxHeight) {
+		                                height = maxHeight - padding;
+		                                style.overflowY = 'auto';
+		                        } else {
+		                                height = elem.scrollHeight - padding;
+		                                style.overflowY = 'hidden';
+		                        };
+		                        style.height = height + extra + 'px';
+		                        scrollTop += parseInt(style.height) - elem.currHeight;
+		                        document.body.scrollTop = scrollTop;
+		                        document.documentElement.scrollTop = scrollTop;
+		                        elem.currHeight = parseInt(style.height);
+		                };
+		        };
+
+		        addEvent('propertychange', change);
+		        addEvent('input', change);
+		        addEvent('focus', change);
+		        change();
+		};
+
+		$(".replyTex").each(function(){
+			autoTextarea(this)
+		})
+
+})(jQuery);

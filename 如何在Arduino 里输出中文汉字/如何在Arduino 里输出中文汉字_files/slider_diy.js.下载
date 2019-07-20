@@ -1,0 +1,392 @@
+var jq = jQuery.noConflict();
+jq(function(){
+    function showPics(index) {
+        var nowLeft = -index*sWidth;
+        jq("#sub-forum-blank-focus ul").stop(true,false).animate({"left":nowLeft},300);
+        jq("#sub-forum-blank-focus .btn span").removeClass("on").eq(index).addClass("on");
+        jq("#sub-forum-blank-focus .btn span").stop(true,false).animate({"opacity":"0.4"},300).eq(index).stop(true,false).animate({"opacity":"1"},300);
+    }
+    if (jq('#sub-forum-blank-focus').length > 0) {
+        var sWidth = jq("#sub-forum-blank-focus").width(); //获取焦点图的宽度（显示面积）
+        var len = jq("#sub-forum-blank-focus ul li").length; //获取焦点图个数
+        var index = 0;
+        var picTimer;
+        var btn = "<div class='btnBg'></div><div class='btn'>";
+        for(var i=0; i < len; i++) {
+            btn += "<span></span>";
+        }
+        btn += "</div><div class='preNext pre'></div><div class='preNext next'></div>";
+        jq("#sub-forum-blank-focus").append(btn);
+        jq("#sub-forum-blank-focus .btnBg").css("opacity",0.5);
+        jq("#sub-forum-blank-focus .btn span").css("opacity",0.4).mouseover(function() {
+            index = jq("#sub-forum-blank-focus .btn span").index(this);
+            showPics(index);
+        }).eq(0).trigger("mouseover");
+        jq("#sub-forum-blank-focus .preNext").css("opacity",0.2).hover(function() {
+            jq(this).stop(true,false).animate({"opacity":"0.5"},300);
+        },function() {
+            jq(this).stop(true,false).animate({"opacity":"0.2"},300);
+        });
+        jq("#sub-forum-blank-focus .pre").click(function() {
+            index -= 1;
+            if(index == -1) {index = len - 1;}
+            showPics(index);
+        });
+        jq("#sub-forum-blank-focus .next").click(function() {
+            index += 1;
+            if(index == len) {index = 0;}
+            showPics(index);
+        });
+        jq("#sub-forum-blank-focus ul").css("width",sWidth * (len));
+        jq("#sub-forum-blank-focus").hover(function() {
+            clearInterval(picTimer);
+        },function() {
+            picTimer = setInterval(function() {
+                showPics(index);
+                index++;
+                if(index == len) {index = 0;}
+            },4000);
+        }).trigger("mouseleave");
+    }
+});
+
+jq(function(){
+    function showPics(index) {
+        var nowLeft = -index*sWidth;
+        jq("#forum-post-detail-focus ul").stop(true,false).animate({"left":nowLeft},300);
+        jq("#forum-post-detail-focus .btn span").removeClass("on").eq(index).addClass("on");
+        jq("#forum-post-detail-focus .btn span").stop(true,false).animate({"opacity":"0.4"},300).eq(index).stop(true,false).animate({"opacity":"1"},300);
+    }
+    if (jq('#forum-post-detail-focus').length > 0) {
+        var sWidth = jq("#forum-post-detail-focus").width();
+        var len = jq("#forum-post-detail-focus ul li").length;
+        var index = 0;
+        var picTimer;
+        var btn = "<div class='btnBg'></div><div class='btn'>";
+        for(var i=0; i < len; i++) {
+            btn += "<span></span>";
+        }
+        btn += "</div><div class='preNext pre'></div><div class='preNext next'></div>";
+        jq("#forum-post-detail-focus").append(btn);
+        jq("#forum-post-detail-focus .btnBg").css("opacity",0.5);
+        jq("#forum-post-detail-focus .btn span").css("opacity",0.4).mouseover(function() {
+            index = jq("#forum-post-detail-focus .btn span").index(this);
+            showPics(index);
+        }).eq(0).trigger("mouseover");
+        jq("#forum-post-detail-focus .preNext").css("opacity",0.2).hover(function() {
+            jq(this).stop(true,false).animate({"opacity":"0.5"},300);
+        },function() {
+            jq(this).stop(true,false).animate({"opacity":"0.2"},300);
+        });
+        jq("#forum-post-detail-focus .pre").click(function() {
+            index -= 1;
+            if(index == -1) {index = len - 1;}
+            showPics(index);
+        });
+        jq("#forum-post-detail-focus .next").click(function() {
+            index += 1;
+            if(index == len) {index = 0;}
+            showPics(index);
+        });
+        jq("#forum-post-detail-focus ul").css("width",sWidth * (len));
+        jq("#forum-post-detail-focus").hover(function() {
+            clearInterval(picTimer);
+        },function() {
+            picTimer = setInterval(function() {
+                showPics(index);
+                index++;
+                if(index == len) {index = 0;}
+            },4000);
+        }).trigger("mouseleave");
+    }
+});
+(function($){
+    $(".notice-opera a").click(function(){
+         $(".notice-detail").toggle();
+    });
+    $(".notice-mail input").blur(function(){
+       if($(this).val()!=""){
+           if(!(/^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test($.trim($(this).val())))){
+               showError('邮箱格式不对');
+               return false;
+           }
+       }
+    });
+    $("#plate-ipt").click(function(e){
+        e.stopPropagation();
+        $(".some-plate .cate-box").toggle();
+    });
+    $(".some-plate a").click(function(e){
+        e.stopPropagation();
+        $("#plate-ipt").val($(this).html());
+        return false;
+    });
+    $(window).on('click',function(){
+        $(".some-plate .cate-box").hide();
+    });
+    $(".module-title h2").hover(function(){
+        var getShowCate = $(".cate-left li");
+        getShowCate.removeClass('on').eq(0).addClass('on');
+    })
+    $(".cate-left li").hover(function(e){
+        e.stopPropagation();
+        /*获取左边框高度赋值右边框*/
+        var getCateLeftHei = $(".cate-left").height();
+        $(".cate-right").height(getCateLeftHei);
+        var getIdx = $(this).index();
+        var getShowCate = $(".cate-right div");
+        /*显示对应右边框*/
+        getShowCate.hide();
+        getShowCate.eq(getIdx).show();
+        var getShowCate = $(".cate-left li");
+        getShowCate.removeClass('on');
+    });
+    /*右边框移入显示对应的左边框移入效果*/
+    $(".cate-right div").hover(function(){
+        var getIdx = $(this).index();
+        var getShowCate = $(".cate-left li");
+        getShowCate.removeClass('on').eq(getIdx).addClass('on')
+    },function(){
+        var getIdx = $(this).index();
+        var getShowCate = $(".cate-left li");
+        getShowCate.removeClass('on').eq(getIdx).removeClass('on');
+    });
+
+
+    if($("#new-adsm-berry").length>0){
+
+        $.ajax({
+            type:'GET'
+            ,url:'/topicform/index.php?c=live&a=getRecommend'
+            ,dataType:'json'
+            ,success:function(data) {
+                var $data = data.list.list;
+                var dataText = '';
+                for(var i =0 ;i<$data.length;i++){
+                    var $avatr = $data[i].lecturer_pic,
+                        $count = $data[i].people_count,
+                        $name = $data[i].course_name,
+                        $url  = $data[i].course_url;
+                    dataText += '<a href="'+$url+'?youlan" target="_blank" >'+
+                        '<li class="clearfix">'+
+                        '<div class="fl live-left">'+
+                        '<img src="'+$avatr+'" >'+
+                        '</div>'+
+                        '<div class="fl live-right">'+
+                        '<p>'+$name+'</p>'+
+                        '<span>'+$count+'人已报名</span>'+
+                        '</div>'+
+                        '</li>'+
+                        '</a>'
+                }
+                $("#new-adsm-berry").append('<div class="sub-live" style="margin-top: 10px;"><h3>精品课程</h3><a target="_blank" class="sub-link-more" href="http://t.elecfans.com/?youlan">查看更多 >></a><ul>'+dataText+'</ul></div>').css('height','auto');
+            }
+        });
+    }
+    if($("#AdHtmlRight").length>0){
+        function getLocalTime(nS) {
+            return new Date(parseInt(nS) * 1000).toLocaleString().replace(/:\d{1,2}$/,' ');
+        }
+        $.ajax({
+            type:'GET'
+            ,url:'/topicform/index.php?c=live&a=getLive'
+            ,dataType:'json'
+            ,success:function(data) {
+                var $data = data.list.list;
+                var dataText = ''
+                for(var i =0 ;i<$data.length;i++){
+                    var $avatr = $data[i].lecturer_pic,
+                        $count = $data[i].people_count,
+                        $name = $data[i].course_name,
+                        $url  = $data[i].course_url,
+                        $play =  $data[i].play_status;
+
+
+                    var statusText=''
+                    if($play=='playing'){
+                        statusText='<span>直播中</span>';
+                    }else if($play=='notStarted'){
+                        var liveTime=getLocalTime( $data[i].start_time);
+                        statusText='<span>'+liveTime+'报名中</span>';
+                    }else{
+                        statusText='<span>'+$count+'人 已报名</span>';
+                    }
+                    dataText += '<a href="'+$url+'?youlan" target="_blank" >'+
+                        '<li class="clearfix">'+
+                        '<div class="fl live-left">'+
+                        '<img src="'+$avatr+'" >'+
+                        '</div>'+
+                        '<div class="fl live-right">'+
+                        '<p>'+$name+'</p>'+
+                        statusText+
+                        '</div>'+
+                        '</li>'+
+                        '</a>'
+                }
+                $("#AdHtmlRight").append('<div class="sub-live"><h3>直播</h3><a class="sub-link-more" target="_blank" href="http://t.elecfans.com/live?youlan">查看更多 >></a><ul>'+dataText+'</ul></div>').css('height','auto');
+            }
+        });
+    }
+    /*获取初始的标签值*/
+    if($("#tags").length>0 ){
+        var getFirstTags = $("#tags").val();
+        var getOnceTag = getFirstTags.split(',');
+        var getOnceHtml  = '';
+        /*循环标签值*/
+        for(var i= 0;i<getOnceTag.length;i++){
+            if(getOnceTag[i]!=""){
+                getOnceHtml +='<span class="item-column"><span class="item-name tag_value_button" data-value="'+getOnceTag[i]+'">'+getOnceTag[i]+'</span><a class="item-close icon-cancel-circle"></a></span>';
+            }
+        }
+        /*添加到新的标签框*/
+        $("#tags").parent('td').html("").append('<div class="kind-box">'+getOnceHtml+'</div>'+
+            '<div class="tags-box">'+
+            '     <input placeholder="输入标签，如：“单片机”" type="text" id="tags" value="" style="width:220px;border:none;outline:none;box-shadow: none;background:none;"  >'+
+            '   <input type="hidden" name="tags" id="getTags" value="'+getFirstTags+'">'+
+            '</div>');
+    }
+
+    /*展示标签的弹窗*/
+    function showTagTips(name) {
+
+        var html = "<div class=\"l-tag-sugg\" style=\"display: none;\"><ul></ul></div>";
+        var list_total = 0;
+        var indexLi = -1;
+        $("#tags").attr("autocomplete", "off");
+        $("body").append(html);
+        $(document).bind("click",function(e){
+            var _target = $(e.target);
+            if((_target.closest("input[name=" + name + "]").length==0)&&(_target.closest('.l-tag-sugg').length==0)){
+                setTimeout(function() {
+                    $(".l-tag-sugg ul").html("");
+                    $(".l-tag-sugg").css("display", "none");
+                }, 50);
+                $(".l-tag-sugg li").mousemove(function() {
+                    var wd = $(this).attr("data-val");
+                    $("input[name=" + name + "]").val(wd);
+                    $(".l-tag-sugg").css("display", "none");
+                });
+            }
+        })
+        $("#tags").keyup(function(event) {
+            if (event.which == 38 || event.which == 40) {
+                return;
+            } else {
+                indexLi = -1;
+            }
+            var l_dc_input = $("#tags");
+            var key = l_dc_input.val();
+            var width = l_dc_input.outerWidth();
+            var height = l_dc_input.outerHeight();
+            var left = $(this).parent().offset().left;
+            var top = $(this).parent().offset().top+6;
+
+            $(".l-tag-sugg").css({
+                "width": 240,
+                "left": left,
+                "top": top + height+6,
+                "position": "absolute",
+                "display": "",
+                "z-index": "999999999"
+            });
+            $(".l-tag-sugg ul").html("");
+            if (key == "") {
+                $(".l-tag-sugg").css("display", "none");
+            }
+            /*获取关键字*/
+            $.getJSON('/forum.php?mod=tag&op=search&ajaxdata=json&searchkey='+key, function(data) {
+
+                $(".l-tag-sugg ul").html("");
+                var list = data.list;
+                var tpl = "";
+                /*创建关键字的盒子*/
+                tpl += "<li class=\"create_tag\" data-val=\""+key+"\"><span>创建标签 <span style=\"color:red;\">"+key+"</span></span><li>";
+
+                for (var j = 0; j < list.length; j++) {
+                    tpl += "<li data-val=\"" + list[j].tag + "\"><span>" + list[j].tag+"("+list[j].count + ")</span></li>";
+                }
+                if (!list_total) {
+                    list_total = list.length;
+                }
+                $(".l-tag-sugg ul").append(tpl);
+                $('.l-tag-sugg li').unbind('click');
+                $('.l-tag-sugg li').bind("click",function(){
+
+                    var val = $(this).attr('data-val');
+                    $("#tags").val(val);
+                    if($('.tag_value_button').length>=5){
+                        alert('tag不能超过五个');return false;
+                    }
+
+                    var stop_flag = 0 ;
+                    $('.tag_value_button').each(function(){
+                        if($(this).attr('data-value')==val){
+                            alert('已经添加过'+val);
+                            stop_flag = 1;
+                            return false;
+                        }
+                    })
+                    /*如果已有标签就退出*/
+                    if(stop_flag){
+                        return false;
+                    }
+
+                    var t_button = '<span class="item-column"><span class="item-name tag_value_button" data-value='+val+'>'+val+'</span><a class="item-close icon-cancel-circle"></a></span>';
+
+                    $(".kind-box").append(t_button);
+                    /*循环盒子标签 添加到input*/
+                    var LinkTags = '';
+                    $(".kind-box .item-column").each(function(){
+                        if($(this).index()==0){
+                            LinkTags += $(this).find('.tag_value_button').html();
+                        }else{
+                            LinkTags += ','+$(this).find('.tag_value_button').html();
+                        }
+                    });
+                    $("#getTags").val(LinkTags);
+                    $("#tags").val("");
+                    $(".l-tag-sugg").css("display", "none");
+                    $("#tags").focus();
+                })
+            });
+        })
+    }
+    $(document).on('click','.item-close',function(){
+        var getVal  = $(this).siblings('.tag_value_button').html();
+        $(this).parent().remove();
+        var getItemWid = 0;
+        $(".item-column").each(function(){
+            getItemWid += $(this).width();
+        })
+        if(getItemWid<520){
+            $(".tags-box").scrollLeft(0)
+        }else{
+            $(".tags-box").scrollLeft(getItemWid-520);
+        }
+
+        var getAllTag = $("#getTags").val().split(',');//获取tag的全部值
+        var newAllTag = '';
+        var firstAdd = true;
+        for(var i=0 ;i<getAllTag.length;i++){
+            /*判断值不同的添加到新值*/
+            if(getVal!=getAllTag[i]){
+                if(!!firstAdd){
+                    firstAdd = false;
+                    newAllTag += getAllTag[i];
+                }else{
+                    newAllTag +=  ','+getAllTag[i];
+                }
+            }
+        }
+        $("#getTags").val(newAllTag);
+    });
+    showTagTips('tags');
+
+})(jQuery);
+
+
+(function($){
+    $('.cancel').on("click", function(e){
+        $("#plate-ipt").val("")
+    })
+})(jQuery)

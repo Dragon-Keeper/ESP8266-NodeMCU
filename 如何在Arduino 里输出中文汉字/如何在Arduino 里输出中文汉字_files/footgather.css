@@ -1,0 +1,147 @@
+.gather-bottom{
+    background-color: #000;
+    margin-top: 36px;
+    min-width: 1200px;
+/*     position: relative;
+    z-index: 5; */
+}
+.footer-gather{
+    width: 1080px;
+    margin:  0 auto;
+    padding: 32px 0 0px 0;
+}
+.footer-gather a,.footer-gather b{
+    color: #fff;
+}
+.gather-top{
+    border-bottom: 1px solid #797979;
+    padding-bottom: 12px;
+}
+.ga-clear{
+    zoom: 1;
+}
+.ga-clear:after{
+    content: "";
+    display: block;
+    height: 0;
+    clear: both;
+    overflow: hidden;
+}
+.ga-lf{
+    float: left;
+}
+.ga-lr{
+    float: right;
+}
+.gather-top{
+    font-size: 14px;
+}
+.gather-top .ga-lf a{
+    margin-right: 9px;
+}
+.gather-top .ga-lr a{
+    margin-right: 10px;
+}
+.gather-top .ga-lr{
+    padding-right: 10px;
+}
+.gather-main{
+    padding: 22px 0 12px 12px;
+    white-space: nowrap;
+    position: relative;
+}
+.wid138{
+    width: 138px;
+}
+.wid134{
+    width: 134px;
+}
+.wid114{
+    width: 114px;
+}
+.wid109{
+    width: 109px;
+}
+.wid124{
+    width: 124px;
+}
+.wid152{
+    width: 152px;
+}
+.wid168{
+    width: 168px;
+}
+.mb16{
+    margin-bottom: 16px;
+}
+.mt10{
+    margin-top: 10px;
+}
+.mt-3{
+    margin-top: -2px;
+}
+.mt15{
+    margin-top: 15px;
+}
+.gather-main>ul b{
+    font-size: 14px;
+    display: block;
+    padding-bottom: 15px;
+}
+.gather-main>ul a{
+    font-size: 14px;
+}
+.gather-main>ul p{
+    font-size: 14px;
+    color: #fff;
+    line-height: 20px;
+}
+.gather-main>ul>li{
+    margin-top: -1px;
+}
+.absolute-ga{
+    position: absolute;
+    left: 960px;
+    top: 43px;
+}
+.ga-attend{
+    margin-top: 18px;
+}
+.absolute-ga .ga-attend {
+    margin-top: 80px;
+}
+.tzhz-mt {
+    margin-top: 55px;
+}
+.ga-attend img{
+    width: 85px;
+    height: 85px;
+}
+.ga-attend p{
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+.ther-footer{
+    position: relative;
+    border-top: 1px solid #c4c4c4;
+    padding: 10px 0;
+    line-height: 21px;
+    text-align: center;
+    margin-top: 10px;
+    font-family: arial;
+}
+.foot-link {
+    color: #ccc;
+    margin-bottom: 5px;
+    line-height: 26px;
+}
+.foot-link a {
+    display: inline-block;
+    height: 25px;
+    margin: 0 8px;
+    font-size: 13px;
+}
+.ther-footer p{
+    color: #fff;
+    font-size: 13px;
+}

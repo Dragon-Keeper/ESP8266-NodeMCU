@@ -1,0 +1,440 @@
+/*
+   organizing.js
+   用户完善资料弹窗js
+
+   Created by lc on 2016-03-17.
+   Copyright 2016 lc. All rights reserved.
+   */
+
+
+
+   function setcookie(cookieName, cookieValue, seconds, path, domain, secure) {
+    if(cookieValue == '' || seconds < 0) {
+        cookieValue = '';
+        seconds = -2592000;
+    }
+    if(seconds) {
+        var expires = new Date();
+        expires.setTime(expires.getTime() + seconds * 1000);
+    }
+    domain = !domain ? cookiedomain : domain;
+    path = !path ? cookiepath : path;
+    document.cookie = escape(cookiepre + cookieName) + '=' + escape(cookieValue)
+    + (expires ? '; expires=' + expires.toGMTString() : '')
+    + (path ? '; path=' + path : '/')
+    + (domain ? '; domain=' + domain : '')
+    + (secure ? '; secure' : '');
+}
+
+function getcookie(name, nounescape) {
+    name = cookiepre + name;
+    var cookie_start = document.cookie.indexOf(name);
+    var cookie_end = document.cookie.indexOf(";", cookie_start);
+    if(cookie_start == -1) {
+        return '';
+    } else {
+        var v = document.cookie.substring(cookie_start + name.length + 1, (cookie_end > cookie_start ? cookie_end : document.cookie.length));
+        return !nounescape ? unescape(v) : v;
+    }
+}
+
+//检查资料是否完善
+function isPerfectInfo($, _this, isVip, isGroup){
+    var getHost=window.location.host;
+        getHost=getHost.substring(getHost.indexOf("."),getHost.length);//获得二级域名
+    var setHost="http://bbs"+getHost;//设置域名
+    var setQueryUrl=setHost+"/apiprofile.php?mod=checkCompleteInfo";//检测是否完善接口
+    var isComplete = true;
+    var that = _this;
+    if(isVip === 1 || isGroup > 0){
+        return false;
+    }
+    $.ajax({
+        type: "get",
+        url: setQueryUrl,
+        dataType: "jsonp",
+        async: false,
+        complete: function(res){
+            var ref = JSON.parse(res.responseText)
+
+            if(ref.status == "successed" && ref.data.is_Complete == false){
+                var data =  ref.data.userinfo;
+                //判断是否有compulsoryPop类名，如果有即为强制弹出类型，反之则为引导提示类型
+                if($(that).hasClass("compulsoryPop")){
+                    layer.open({
+                        title: ' ',
+                        area: ['340px', '210px'],
+                        content: '<div style="text-align: center"> Hi~ 您的个人信息还不够完善，<br /><span style="color: #d00000;">完善后才能进行此操作，</span><br />也会有更多发烧友想认识您哦！</div>',
+                        btn: '现在去完善',
+                        yes: function(index){
+                            layer.close(index)
+                            //显示表单及赋值
+                            showInput($, data)
+                        }
+                    });
+                   isComplete = ref.data.is_Complete;
+                } else {
+                    if(hasValue()){
+                        layer.open({
+                            title: ' ',
+                            area: ['340px', '210px'],
+                            content: '<div style="text-align: center"> Hi~ 您的个人信息还不够完善，<br />完善后会有更多发烧友想认识您哦！</div>',
+                            btn: '现在去完善',
+                            yes: function(index){
+                                layer.close(index)
+                                //显示表单及赋值
+                                showInput($, data)
+                            }
+                        });
+                        isComplete = ref.data.is_Complete;
+                    }
+                }
+            }
+        }
+    });
+    return isComplete;
+}
+
+//显示表单及赋值
+function showInput($, data){
+    var getHost=window.location.host;
+        getHost=getHost.substring(getHost.indexOf("."),getHost.length);//获得二级域名
+    var setHost="http://bbs"+getHost;//设置域名
+    var setDataUrl=setHost+"/static/js/organizing/js/organizing-data.js?20181211";//表单页面数据URL
+    var setCssUrl=setHost+"/static/js/organizing/css/organizing.css?20181211" ;//样式文件URL
+    //动态加载CSS文件
+    $("head").append('<link type="text/css" rel="stylesheet" href="'+setCssUrl+'" />');
+
+    $("body").append('<script src="'+setDataUrl+'"></script>');//动态加载JS文件
+    $("body").append('<script src="/static/js/address_select.js"></script>');//动态加载JS文件
+
+    // 初始值
+    var has_resideprovince = false;
+    !function(){
+        var arg = arguments;
+        if ($("select[name=resideprovince]").children().length && !has_resideprovince) {
+            has_resideprovince = true;
+            if(data.hasOwnProperty("mobile")){
+                $('#email').remove();
+            }
+            if (data.hasOwnProperty("email")) {
+                $('#mobile').remove();
+            }
+            for(var i in data){
+                if(data[i]){
+                    $(".o-form input[name="+ i +"], select[name="+ i +"]").parents(".o-data-list").css("display", 'none')
+                    $(".o-form input[name="+ i +"]:checked").parents(".o-data-list").css("display", 'none')
+                }
+            }
+            if(data.field2.length > 0){
+                $(".technology_item").parents(".o-data-list").css("display", 'none')
+            }
+            if(data.field7.length > 0){
+                $(".app_item").parents(".o-data-list").css("display", 'none')
+            }
+            $("input[name=realname]").val(data.realname);
+            $("input[name=company]").val(data.company);
+            $("select[name=field1]").val(data.field1);
+            $("input[name=position]").val(data.position);
+            $("select[name=resideprovince]").val(data["resideprovince"]).change(); //省
+
+
+            //解决技术领域不是选择的标签，而是自己用户输入标签的时，赋值
+            for (var i = 0; i < data.field2.length; i++) {
+                var $ele1 = $(".technology_item[value='"+ data.field2[i] +"']");
+                if ($ele1.length) {
+                    $(".technology_item[value='"+ data.field2[i] +"']").attr('checked',true).prev().addClass('active');
+                } else {
+                    $(".technology_item").after('<input type="checkbox" checked name="field2[]" value="'+ data.field2[i] +'">')
+                }
+            }
+
+            //同技术领域
+            for (var i = 0; i < data.field7.length; i++) {
+                var $ele2 = $(".app_item[value='"+ data.field7[i] +"']");
+                if ($ele2.length) {
+                    $(".app_item[value='"+ data.field7[i] +"']").attr('checked',true).prev().addClass('active');
+                } else {
+                    $(".app_item").after('<input type="checkbox" checked name="field7[]" value="'+ data.field7[i] +'">')
+                }
+            }
+        } else {
+            setTimeout(function(){
+                arg.callee();
+            },500)
+        }
+    }();
+    // 初始值
+    var has_residecity = false;
+    !function(){
+        var arg = arguments;
+        if ($("select[name=residecity]").children().length && $("select[name=residecity]").children(':last').text() != "请选择市/区" && !has_residecity) {
+            has_residecity = true;
+            $("select[name=residecity]").val(data["residecity"]).change(); //省
+        } else {
+            setTimeout(function(){
+                arg.callee();
+            },500)
+        }
+    }();
+}
+
+//计算当前时间和第一次点击的时间差
+function differ(d1, d2){
+    var d3 = parseInt(d2 - d1) / 1000 / 60 /60
+    return d3
+}
+
+//判断引导提示的次数及两次的相隔时间
+function hasValue(){
+    //存储点击的时间和次数
+    var popTime = getcookie("popTime") && JSON.parse(getcookie("popTime")),
+        popTimeValue = {
+            popNum: 1,
+            popDate: new Date()
+        };
+    //设置过期时间，每天24点自动过期
+    var time = new Date().getTime(),
+        date = new Date(new Date(new Date().toLocaleDateString()).getTime()+24*60*60*1000-1).getTime(),
+        expiresTime = ( date - time )/ 1000;
+
+    if (!popTime) {
+        setcookie("popTime", JSON.stringify(popTimeValue), expiresTime)
+        return true
+        //两次弹出的时间差要大于一小时
+    } else if(popTime.popNum < 2 && differ(new Date(popTime.popDate), new Date()) > 1) {
+        //记录触发的次数
+        popTime.popNum++
+        setcookie("popTime", JSON.stringify(popTime), expiresTime)
+        return true
+    } else {
+        return false;
+    }
+}
+
+
+/*
+ * 页面DOM操作
+ */
+ ;(function($){
+    var getHost=window.location.host;
+        getHost=getHost.substring(getHost.indexOf("."),getHost.length);//获得二级域名
+        var setHost="http://bbs"+getHost+"/m";//设置域名
+        var setSaveUrl=setHost+"/apiprofile.php?mod=apiCommitProfile";//提交完善资料接口
+         /*选项的选中与删除状态*/
+         $(document).on("click",".o-data-list label",function(){
+            $(this).hasClass("active")?$(this).removeClass("active"):$(this).addClass("active");
+        })
+         /*点击选项，移除错误提示*/
+         .on("click",".o-data-list label,.customer_items,input[type=text]",function(){
+            $(this).parents("dl").removeClass("o-error-box").find(".o-error_tips").hide();
+        })
+         /*获得焦点时，也移除错误提示*/
+         .on("focus","input[type=text]",function(){
+            $(this).parents("dl").removeClass("o-error-box").find(".o-error_tips").hide();
+        })
+         /*选择框更改，也移除错误提示*/
+         .on("change","select",function(){
+            $(this).parents("dl").removeClass("o-error-box").find(".o-error_tips").hide();
+        })
+         ;
+         /*用户自定义选项添加与删除*/
+        //定义添加函数
+        var addOptions=function(name){
+            var getBoxEle=$("dd[data-name="+name+"]");//获得dd元素
+            var getInputBox=getBoxEle.find("input[type=text]").eq(0);//获得输入框
+            var getValue=getInputBox.val();//获得输入值
+            if(!!getValue){
+                //如果用户输入超过15个字，就提示
+
+                var msg="";
+                var reg=/[^\u4e00-\u9fa5A-Za-z0-9\-]/g;//检测是否有特殊字符
+                var reg2=/^\d+$|^\-+$|^(.)\1{1,}$/; //检测是否是纯数字或者纯相同字母或者纯下滑线，或者相同的汉字
+
+                if(reg.test(getValue)){
+                    msg="请不要输入特殊字符";
+                }else if(getValue.length>15){
+                    msg="最多输入15个字符";
+                }else if(reg2.test(getValue)){
+                    msg="添加项不能是纯数字或者相同的字符";
+                }
+                if(msg!=""){
+                    getBoxEle.find(".o-error_tips").html(msg).show();
+                    return;
+                }
+
+                getInputBox.val("");//清空输入框
+                var getAddItemBoxEle=getBoxEle.find(".o-customer_items_box");//获得添加的区域
+                var getItems=getAddItemBoxEle.find(".o-add_item");//获得之前添加的选项
+                //判断是否重复添加
+                for(var i=0;i<getItems.length;i++){
+                    if(getValue==getItems.eq(i).find("input").val()){
+                        return;
+                    }
+                }
+                //添加,如果超过3个，就隐藏添加框
+                if(getItems.length>=2){
+                    getAddItemBoxEle.find("input[type=text],.o-add_button").hide();
+                }
+                //添加到输入框前面去
+                $(
+                    '<span class="o-add_item">'+getValue+' <i>×</i>'+
+                    '<input type="checkbox" name="'+name+'[]" value="'+getValue+'" checked="checked" />'+
+                    '</span>'
+                    ).insertBefore(getInputBox);
+            }
+        };
+        $(document)
+        //用户添加选项回车添加
+        .on("keyup",".o-customer_items_box input[type=text]",function(e){
+            var e=e?e:window.event;
+            if(e.keyCode==13){
+                //添加
+                var getName=$(this).parents("dd:eq(0)").attr("data-name");//获取name
+                addOptions(getName);
+            }
+            return false;
+        })
+        //按钮添加
+        .on("click",".o-add_button button",function(){
+            var getName=$(this).parents("dd:eq(0)").attr("data-name");//获取name
+            addOptions(getName);
+            return false;
+        })
+        //失去焦点添加
+        .on("blur",".o-customer_items_box input[type=text]",function(){
+                var getName=$(this).parents("dd:eq(0)").attr("data-name");//获取name
+                addOptions(getName);
+            })
+        //删除用户自定义项
+        .on("click",".o-customer_items_box i",function(){
+            //删除后，显示添加文本框
+            $(this).parents(".o-customer_items_box").find("input[type=text],.o-add_button").show();
+            $(this).parent().remove();
+
+        });
+
+
+        /*
+         * 表单提交
+         */
+         $(document).on("submit",".o-form",function(){
+            var This=$(this);
+            var checkFn=function(){
+                var bool=true;
+                //检查名称
+                var realname=$("input[name=realname]");
+                if(realname.val()==""){
+                    //显示错误提示
+                    realname.parents("dl").addClass("o-error-box").find(".o-error_tips").html("请填写您的名称").show();
+                    bool=false;
+                }
+                //检查公司
+                var company=$("input[name=company]");
+                if(company.val()==""){
+                    //显示错误提示
+                    company.parents("dl").addClass("o-error-box").find(".o-error_tips").html("请填写您的公司名称").show();
+                    bool=false;
+                }
+                //检查职位
+                var position=$("input[name=position]");
+                if(position.val()==""){
+                    //显示错误提示
+                    position.parents("dl").addClass("o-error-box").find(".o-error_tips").html("请填写您的职位").show();
+                    bool=false;
+                }
+                //检查工作性质
+                var getSelectEle=$("[name=field1]");
+                if(getSelectEle.val()==""){
+                    //显示错误提示
+                    getSelectEle.parents("dl").addClass("o-error-box").find(".o-error_tips").html("请选择工作性质").show();
+                    bool=false;
+                }
+                //检查领域
+                var getDdEle=$(".organizing_data dd[data-name]");
+                getDdEle.each(function(index,element){
+                    var getSelectItem=$(element).find("input[type=checkbox]:checked");
+                    if(getSelectItem.length==0){
+                        //显示错误提示
+                        $(element).parents("dl").addClass("o-error-box").find(".o-error_tips").html("请至少填选择一项或添加一项").show();
+                        bool=false;
+                    }
+                });
+                //检查省份
+                var resideprovince=$("select[name=resideprovince]");
+                if(resideprovince.val()==""){
+                    //显示错误提示
+                    resideprovince.parents("dl").addClass("o-error-box").find(".o-error_tips").html("请填写省份").show();
+                    bool=false;
+                }
+                //检查城市
+                var residecity=$("select[name=residecity]");
+                if(residecity.val()==""){
+                    //显示错误提示
+                    residecity.parents("dl").addClass("o-error-box").find(".o-error_tips").html("请填写城市").show();
+                    bool=false;
+                }
+                //检查手机或邮箱
+                if($(".concat").length> 0 && $(".concat").val()==""){
+                    //显示错误提示
+                    $(".concat").parents("dl").addClass("o-error-box").find(".o-error_tips").html("请填写联系方式").show();
+                    bool=false;
+                }
+                return bool;
+            };
+            $.ajax({
+                type:"post",
+                url:setSaveUrl,
+                data:This.serialize(),
+                dataType:"json",
+                beforeSend:function(){
+                    //校验
+                    if(!checkFn()){return false;}
+                    //锁定按钮
+                    This.find("input[type=submit]").val("请稍后...").attr("disabled","disabled");
+                },
+                success:function(res){
+                    if(res["status"]=="failed"){
+                        //提示错误
+                        $(".o-ajaxError").html(res["msg"]).show();
+                        if(res["error_code"] === 601 || res["error_code"] === 6){           //非法真实姓名，需重新填写
+                            $(".o-form input[name='realname']").parents(".o-data-list").css("display", 'block')
+                            var getOffTop = $(".o-form input[name='realname']").focus()//.offset().top;
+                        }
+                        if(res["error_code"] === 201){           //非法公司/职位/技术领域/应用领域/学历/毕业院校/通讯地址等，需重新填写；
+                            if (res.data === 'field2' || res.data === 'field7') {
+                                res.data = res.data + '[]';
+                            }
+                            $(".o-form input[name='"+ res["data"] +"']").parents(".o-data-list").css("display", 'block')
+                            var getOffTop = $(".o-form input[name='"+ res["data"] +"']").focus()//.offset().top;
+                        }
+                        if (~res.msg.search('技术领域')) {
+                            $('.o-form [name="field2[]"]').closest(".o-data-list").show();
+                        } else if (~res.msg.search('应用领域')){
+                            $('.o-form [name="field7[]"]').closest(".o-data-list").show();
+                        }
+                    }
+
+                    else{
+                        //关闭窗口
+                        $(".organizing_data").remove();
+                        layer.msg('保存成功');
+                        isPerfectInfo($, "body")
+                    }
+                },
+                complete:function(res){
+                    //解锁按钮
+                    This.find("input[type=submit]").val("保存").removeAttr("disabled");
+                }
+            });
+            return false;//必须加上，以免页面刷新
+        });
+
+         /*关闭窗口*/
+         $(document)
+         .on("click","#o-form-dialog .o-close_dialog",function(){
+            $(".organizing_data").remove();
+        })
+ })(jQuery)
+
+

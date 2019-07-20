@@ -1,0 +1,693 @@
+var jq = jQuery.noConflict();
+jq(function(){
+    
+    // 底部备案链接
+    jq('#bbs-beianhao').attr('href', 'http://www.miitbeian.gov.cn/');
+    jq('#bbs-beianhao').attr('target', '_balnk');
+
+    // 导航下拉
+    var group = 'menu_1',//也可以使用：$.mouseDelay.get()生成一个不重复的名称
+        pullHover = jq('#pull_nav');
+        industHover = jq('.indusLinks');
+    pullHover.mouseDelay(false,group).hover(function(){
+        if(!jq("#forum_nav").is(":animated")){
+            jq("#forum_nav").slideDown("fast");
+        }
+    },function(){
+        if(!jq("#forum_nav").is(":animated")){
+            jq("#forum_nav").slideUp("fast");
+        }
+    });
+    
+    industHover.mouseDelay(false,group).hover(function(){
+        if(!jq(".industShow").is(":animated")){
+            jq(".industShow").slideDown("fast");
+        }
+    },function(){
+        if(!jq(".industShow").is(":animated")){
+            jq(".industShow").slideUp("fast");
+        }
+    });
+
+    // 个人信息下拉
+    jq("#useritem").mouseenter(function(){
+        jq('.userstatus').show();
+    });
+    jq(".um-wrap").on("mouseleave",function(){
+        jq('.userstatus').hide();
+    });
+ 
+    // 面包屑导航
+    if(jq('.bread_nav').length > 0){
+        // 面包屑导航下拉
+        jq('.drop_nav').mouseDelay(false,group).hover(function(){
+            jq(this).children('.sec_nav').show().parent().siblings('.drop_nav').children('.sec_nav').hide();
+        },function(){
+            jq(this).children('.sec_nav').hide();
+            console.log();
+        });
+
+        // 面包屑导航 滚动固定
+        var breadOffsetTop = jq('.bread_nav').offset().top;
+        jq(window).bind('scroll', function() {
+            var scrollTop=document.documentElement.scrollTop+document.body.scrollTop;
+            if(scrollTop > breadOffsetTop){
+                jq('.bread_nav').addClass('cur');
+            }else{
+                jq('.bread_nav').removeClass('cur');
+            }
+        });
+        // 面包屑导航导读
+        function initNavTips() {
+            if (!uid) {
+                return false;
+            }
+            if(jq('#details_nav').length < 1){
+                return false;
+            }
+            if (!window.localStorage) {
+                return false;
+            }
+            var tipClick = localStorage.getItem('close');
+            if(tipClick != null) {
+                return true;
+            }
+            jq.post('/apiprofile.php?mod=tips', {name:'navclose'}, function(response){
+                if (response.error_code > 0) {
+                    return false;
+                }
+                var data = response.data;
+                if (data['need_tips'] == 1) {
+                    jq('.bread_nav').addClass('first');
+                    jq('.closeTip').click(function(){
+                        jq('.bread_nav').removeClass('first');
+                        localStorage.setItem("close", 1);
+                        jq.post('/apiprofile.php?mod=tips',{name:'navclose', clicked:1}, function(){});
+                    });
+                } else {
+                    localStorage.setItem("close", 1);
+                }
+            }, 'json');
+        }
+        initNavTips();
+
+
+        function ResizeForumMask(){
+            var docH = jq(document).height();
+            var docW = jq(document).width();
+            jq('.forum-subsection-mask').css({"width":docW+'px',"height":docH+'px'});                                    
+        }
+
+        //论坛帖子列表页-收藏本版-遮罩层显示与关闭
+        function initFavoiconTips() {
+            if(!uid || jq('#post_listpage_title').length < 1){
+                return false;
+            }
+            if (!window.localStorage){
+                return false;
+            }
+            var tipClick = localStorage.getItem('favorclose');
+            
+            if(tipClick != null){
+                return true;
+            }
+            jq.post('/apiprofile.php?mod=tips', {name:'favorclose'}, function(response){
+                if (response.error_code > 0) {
+                    return false;
+                }
+                var data = response.data;
+                if (data['need_tips'] == 1) {
+                    jq('.post-listpage-set').addClass('first');
+                    ResizeForumMask();
+                    jq('.forum-subsection-mask').show();
+                    jq('.forum-collection-guide').show();
+
+                    jq('.f-collect-close').click(function(){
+                        localStorage.setItem("favorclose",1);
+                        jq('.post-listpage-set').removeClass('first');
+                        jq('.forum-subsection-mask').hide();
+                        jq('.forum-collection-guide').hide();
+                        jq.post('/apiprofile.php?mod=tips', {name:'favorclose', clicked:1}, function(response){});
+                    });
+                } else {
+                    localStorage.setItem("favorclose",1);
+                }
+            }, 'json');
+        }
+        initFavoiconTips();
+
+        jq(window).resize(function(){
+            ResizeForumMask();
+        });
+
+
+    }
+    
+    /*板块右侧  我要提问 发帖*/
+    jq('.ask_post a').mouseenter(function(){
+        jq(this).css({'width':'200px'}).siblings().css({'width':'100px'});
+    });
+    
+    //轮换=============================
+    jq(document).ready(function(){
+        var slide = ".Slide-list li",
+            triggers =".slide-triggers li",
+            preBtn = '.pre_btn',
+            nextBtn = '.next_btn';
+        jq(slide + ":not(:first)").hide();
+        jq(triggers + ":first").addClass("cur");
+
+        jq(triggers).hover(function(){
+            var index = jq(this).index();
+            jq(this).addClass("cur").siblings().removeClass("cur");
+            jq(slide).eq(index).show().siblings().hide();
+            return false;
+        });
+
+        jq(nextBtn).click(function(){
+           if(jq(slide + ":last").is(":visible")){
+                jq(slide + ":first").fadeIn("slow");
+                jq(slide + ":last").hide();
+            }
+            else{
+                jq(slide + ":visible").hide().next().fadeIn("slow");
+            }
+        });
+
+        jq(preBtn).click(function(){
+           if(jq(slide + ":first").is(":visible")){
+                jq(slide + ":last").fadeIn("slow");
+                jq(slide + ":first").hide();
+            }
+            else{
+                jq(slide + ":visible").hide().prev().fadeIn("slow");
+            }
+        });
+
+        setInterval(function(){
+            if(jq(slide + ":last").is(":visible")){
+                jq(slide + ":first").fadeIn("slow");
+                jq(slide + ":last").hide();
+            }
+            else{
+                jq(slide + ":visible").hide().next().fadeIn("slow");
+            }
+            var index = jq(slide + ":visible").index();
+            jq(triggers).eq(index).addClass("cur").siblings().removeClass("cur");
+        },5000)
+    });
+    //轮换 end=============================
+
+    // 发布页面
+    jq('.post-select-list label').click(function(o){    
+       jq(this).addClass('cur').siblings().removeClass('cur');   
+    });
+    
+    if(jq('#tabUPC752').length >0){
+        // 版块头部 广告切换
+        var tabNav = jq('#forum-diy .tab_nav li');
+        tabNav.click(function(){
+           jq(this).addClass('a').siblings().removeClass('a');
+           jq(this).parent().parent().siblings('#tabUPC752_content').children().eq(jq(this).index()).show().siblings().hide();
+        });
+        // 活动展示
+        jq('.tab_img li:nth-child(3n)').css({'margin-right': 0});
+    }
+
+    // 详情页面 底部页面显示
+//  if(jq('#pageNum .pg').length>0){
+//      if(jq('#postReply').length > 0){
+//          jq(window).bind('scroll', function() {
+//              var outTop = jq('#p_btn').offset().top,
+//              scrollTop=document.documentElement.scrollTop+document.body.scrollTop; 
+//              if(scrollTop >= outTop){
+//                  jq('#footerPage').show();
+//              }else{
+//                  jq('#footerPage').hide();
+//              }
+//          });
+//      }else{
+//          jq('#footerPage').show();
+//      }
+//  }
+
+    // 右侧固定广告 TI
+    jq(window).bind('scroll', function() {
+        var scrollTop=document.documentElement.scrollTop+document.body.scrollTop + 400,
+            advertTiTop = scrollTop - 220;
+        jq("#advertTi").css({'position': 'absolute'});
+        if(!jq("#advertTi").is(":animated")){
+            jq("#advertTi").animate({top: advertTiTop+'px'},80);
+        }
+    });
+    jq('.tiSmall').mouseenter(function(){
+       jq(this).hide().siblings().show();
+    });
+    jq("#advertTi").mouseleave(function(){
+        jq('.tiBig').hide().siblings().show()
+    });
+    var thisURL = window.location.href;
+    if(thisURL.indexOf('zhuti_wiznet_1') !== -1 || thisURL.indexOf('zhuti_cypress_1') !== -1 || thisURL.indexOf('zhuti_684_1') !== -1){
+        jq("#advertTi").hide();
+    }
+
+    // 子版块列表
+    if(jq('#sub_forum_list').length > 0){
+        jq('#theme_info1').children().eq(0).show().siblings().hide();
+        jq('#theme_info2').children().eq(0).show().siblings().hide();
+        jq('.page_nav li').click(function(){
+            jq(this).addClass('cur').siblings().removeClass('cur');
+            jq(this).parent().siblings('.theme_info').children().eq(jq(this).index()).show().siblings().hide();
+        });
+    };
+
+    // 帖子详情 相关帖子和标签的显示
+    var tabPost = jq('.tab_post').parent().parent('.bor_t');
+    tabPost.css({ 'border-top': '1px dashed #e4e4e4', 'padding-top': '20px', 'margin-top':'20px' });
+});
+
+
+/*PCB板块广告*/
+(function($){
+        //计价框
+    $(function(){
+        setQuoteDom();
+        var dataVm = {
+            blayer: 2,
+            bcount: 10,
+            bwidth: '',//X
+            blength: '',//Y
+            bheight:1.6,
+            url:''
+        }
+        dataVm.url='http://www.hqpcb.com/quote?btnid=2&layer='+dataVm.blayer+'&width='+dataVm.bwidth+'&length='+dataVm.blength+'&count='+dataVm.bcount+'&height='+dataVm.bheight+'&tid=32'
+        function setVmurl(){
+            dataVm.url = 'http://www.hqpcb.com/quote?btnid=2&layer='+dataVm.blayer+'&width='+dataVm.bwidth+'&length='+dataVm.blength+'&count='+dataVm.bcount+'&height='+dataVm.bheight+'&tid=32';
+        }
+        $('.Quotebtn').click(function(){
+            window.open(dataVm.url);
+        });
+
+        $("#VmWidth").change(function(){
+            dataVm.bwidth=$(this).val();
+            setVmurl();
+        });
+        $("#VmLength").change(function(){
+            dataVm.blength=$(this).val();
+            setVmurl();
+        });
+
+        function setQuoteDom(){
+            var blayerDom = '';
+            blayerDom += '';
+            blayerDom += '<li data="1">1</li>';
+            blayerDom += '<li data="2">2</li>';
+            blayerDom += '<li data="4">4</li>';
+            blayerDom += '<li data="6">6</li>';
+            blayerDom += '<li data="8">8</li>';
+            blayerDom += '<li data="10">10</li>';
+            blayerDom += '<li data="12">12</li>';
+            blayerDom += '<li data="14">14</li>';
+            blayerDom += '<li data="16">16</li>';
+            $("#blayerOption").html(blayerDom);
+
+            var bheightDom = '';
+            bheightDom += '<li data="0.4">0.4</li>';
+            bheightDom += '<li data="0.6">0.6</li>';
+            bheightDom += '<li data="0.8">0.8</li>';
+            bheightDom += '<li data="1.0">1.0</li>';
+            bheightDom += '<li data="1.2">1.2</li>';
+            bheightDom += '<li data="1.6">1.6</li>';
+            bheightDom += '<li data="2.0">2.0</li>';
+            bheightDom += '<li data="2.5">2.5</li>';
+            bheightDom += '<li data="3.0">3.0</li>';
+            $("#bheightOption").html(bheightDom);
+
+            var countDom = '';
+            countDom += '<li data="5">5</li>';
+            countDom += '<li data="10">10</li>';
+            countDom += '<li data="15">15</li>';
+            countDom += '<li data="20">20</li>';
+            countDom += '<li data="25">25</li>';
+            countDom += '<li data="30">30</li>';
+            countDom += '<li data="40">40</li>';
+            countDom += '<li data="50">50</li>';
+            countDom += '<li data="60">60</li>';
+            countDom += '<li data="80">80</li>';
+            countDom += '<li data="100">100</li>';
+            countDom += '<li data="120">120</li>';
+            countDom += '<li data="150">150</li>';
+            countDom += '<li data="200">200</li>';
+            countDom += '<li data="250">250</li>';
+            countDom += '<li data="300">300</li>';
+            countDom += '<li data="350">350</li>';
+            countDom += '<li data="400">400</li>';
+            countDom += '<li data="450">450</li>';
+            countDom += '<li data="500">500</li>';
+            countDom += '<li data="600">600</li>';
+            countDom += '<li data="700">700</li>';
+            countDom += '<li data="800">800</li>';
+            countDom += '<li data="900">900</li>';
+            countDom += '<li data="1000">1000</li>';
+            countDom += '<li data="1500">1500</li>';
+            countDom += '<li data="2000">2000</li>';
+            countDom += '<li data="2500">2500</li>';
+            countDom += '<li data="3000">3000</li>';
+            countDom += '<li data="3500">3500</li>';
+            countDom += '<li data="4000">4000</li>';
+            countDom += '<li data="4500">4500</li>';
+            countDom += '<li data="5000">5000</li>';
+            countDom += '<li data="5500">5500</li>';
+            countDom += '<li data="6000">6000</li>';
+            countDom += '<li data="6500">6500</li>';
+            countDom += '<li data="7000">7000</li>';
+            countDom += '<li data="7500">7500</li>';
+            countDom += '<li data="8000">8000</li>';
+            countDom += '<li data="8500">8500</li>';
+            countDom += '<li data="9000">9000</li>';
+            $("#bcountOption").html(countDom);
+
+        }
+        function countBheight(){
+            var min_height = 0.4,
+                max_height = 3.0,
+                def_height = 1.6;
+            var layer = parseInt(dataVm.blayer);
+            switch(layer){
+                case 1:
+                    min_height = 0.6;
+                    max_height = 2.0;
+                    break;
+                case 2:
+                    min_height = 0.4;
+                    max_height = 2.5;
+                    break;
+                case 4:
+                    min_height = 0.6;
+                    max_height = 2.5;
+                    break;
+                case 6:
+                    min_height = 0.8;
+                    max_height = 3.0;
+                    break;
+                case 8:
+                    min_height = 1.0;
+                    max_height = 3.0;
+                    break;
+                case 10:
+                    min_height = 1.2;
+                    max_height = 3.0;
+                    break;
+                case 12:
+                case 14:
+                    min_height = 1.6;
+                    max_height = 3.0;
+                    break;
+                case 16:
+                    min_height = 2.0;
+                    max_height = 3.0;
+                    def_height = 2.0;
+                    break;
+            }
+            setBheight(min_height,max_height,def_height);
+        }
+        //板子层数与厚度的逻辑 -------------------------------------
+        function setBheight(min_height,max_height,def_height){
+            var option = $("#bheightOption").find("li");
+            option.show();
+            option.each(function(index,element){
+                var _this = $(this);
+                var bheight = _this.attr("data");
+                if(bheight < min_height){
+                    _this.hide();
+                }
+                if(bheight > max_height){
+                    _this.hide();
+                }
+
+            })
+            //设置默认值
+            dataVm.bheight = def_height;
+            $("#bheightOption").parent().parent().find('.btn-text').html(dataVm.bheight);
+        }
+        $("#Quotemain .icon").css('vertical-align','top');
+        $("#Quotemain").parents('.a_pr').css('overflow','visible');
+        $("#Quotemain").find(".choose-btn").on('click',function(){
+            var _this = $(this);
+            var $thisChooseMenu = _this.siblings(".choose-menu");
+            var $thisParent = _this.parent();
+            $(".choose-menu").not($thisChooseMenu).hide();
+
+            // 获取choosebox的宽度：width+左右边距
+            var width = $thisParent.width()+parseInt($thisParent.css("paddingLeft"))+parseInt($thisParent.css("paddingRight"));
+            //设置choose-menu宽度
+            if($thisChooseMenu.is(".wider")){
+                width = width*1.35;
+                if(width<230){
+                    width = 230;
+                }
+            }
+            if($thisChooseMenu.is(".wider-large")){
+                width = width*2;
+                if(width<360){
+                    width = 360;
+                }
+            }
+            //飞针测试针对性处理
+            $thisChooseMenu.width(width);
+            $thisChooseMenu.toggle();
+
+        })// End pcbForm
+        $("#Quotemain").find(".choose-menu").find("li").on('click',function(){
+            $(".choose-menu").hide();
+        })
+        //点击下拉菜单以外区域，关闭下单菜单
+        $(document).on('click', function(){
+            $(".choose-menu").hide();
+        }).on('click', '.choosebox', function(event){
+            event.stopPropagation();
+        })
+        //计价框
+        $("#homeQuote").find("ul[data-key]").on('click','li',function(){
+            var _this = $(this);
+            var $thisChooseBox = _this.parent().parent().parent(),
+                $btn = $thisChooseBox.find(".btn-text"),
+                html = _this.html(),
+                key = _this.parent().data("key"),
+                type = _this.parent().data("type"),
+                value = _this.attr("data");
+            //数据绑定 -------
+            if(type=='number'){
+                value = Number(value);
+            }
+            dataVm[key] = value;
+            //隐藏choose-menu
+            $(".choose-menu").hide();
+
+            //板子层数与板子厚度
+            if(key == "blayer"){
+                countBheight();
+
+            }
+            $btn.html(value)
+            setVmurl();
+        })//End click 事件
+    })
+
+
+
+    //社区之星收藏
+    $(".favorite_stars").each(function(){
+        $(this).click(function(event) {
+            if(uid != 0){
+                var tid = $(this).attr("data-tid");
+                var hash = $(this).attr("data-hash");
+                var that = this
+                if($(this).hasClass("click_check")){
+                    $.ajax({
+                        type:"get",
+                        url:"/home.php?",
+                        data :{
+                            'mod': 'spacecp',
+                            'ac' : 'favorite',
+                            'type' : "thread",
+                            "op" : "delete",
+                            'checkall' : 1,
+                            "ajaxdata" : 'json',
+                            'formhash' : hash ,
+                            'id': tid
+                        },
+                        complete:function(res){
+                            if( res.status == 200 && res.readyState == 4 ){
+                                var data = JSON.parse(res.responseText);
+                                if(data.data.length != 0){
+                                    $(that).removeClass("click_check");
+                                    $(that).children('img').attr("src", "/template/elecfans_201805/images/u17.png")
+                                    $(that).children('span').text("收藏");
+                                }else{
+                                    showMsg(data.message);
+                                }
+                            }
+                        }
+                    });
+                }else{
+                    $.ajax({
+                        type:"get",
+                        url:"/home.php?",
+                        data :{
+                            'mod': 'spacecp',
+                            'ac' : 'favorite',
+                            'type' : "thread",
+                            "ajaxdata" : 'json',
+                            'formhash' : hash ,
+                            'id': tid
+                        },
+                        complete:function(res){
+                            if( res.status == 200 && res.readyState == 4 ){
+                                var data = JSON.parse(res.responseText);
+                                if(data.data.length != 0){
+                                        $(that).addClass("click_check");
+                                        $(that).children('img').attr("src", "/template/elecfans_201805/images/u166.png")
+                                         $(that).children('span').text("已收藏");
+                                }else{
+                                    if(data.message == "您需要先登录才能继续本操作"){
+                                        showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+                                    } else {
+                                        showMsg(data.message);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                showWindow('reply','member.php?mod=logging&action=login&inajax=yes&guestmessage=yes');
+            }
+        });
+    })
+
+    // 2019.1.23广告位   
+    // 全局域名
+    var ELECFANS_HOST = window.location.host;
+    var ELECFANS_DOMAIN_ARR = ELECFANS_HOST.split('.');
+    var ELECFANS_DOMAIN_LEN = ELECFANS_DOMAIN_ARR.length;
+    var ELECFANS_DOMAIN = ELECFANS_DOMAIN_ARR[(ELECFANS_DOMAIN_LEN-2)]+'.'+ELECFANS_DOMAIN_ARR[(ELECFANS_DOMAIN_LEN-1)];
+    var ELECFANS_BBS = 'http://bbs.'+ELECFANS_DOMAIN;
+    var ELECFANS_WWW = 'http://www.'+ELECFANS_DOMAIN;
+    var ELECFANS_E = 'http://e.'+ELECFANS_DOMAIN;
+    var ELECFANS_t = 'http://t.'+ELECFANS_DOMAIN;
+
+    //获取学院推荐广告
+    $.ajax({
+        url: "http://t.elecfans.com/api/apiGetLiveRecommend",
+        type: 'get',
+        dataType: "jsonp",
+        data: {
+            format: 'jsonp'
+        },
+        success: function(res){
+            var html = "",
+                data = res.data;     
+            for (var i = 0; i < data.length; i++) {
+                html += '<li>'+
+                            '<div class="commend_tit">'+
+                                '<i class="start_logo">'+ data[i].live_sign +'</i>'+
+                                '<a href="'+ data[i].url +'">'+ data[i].title +'</a>'+
+                            '</div>'+
+                            '<div class="commend_detail fixclear">'+
+                                '<span>'+ data[i].lecturer +'</span>'+
+                                '<span class="through-line"></span>'+
+                                '<span class="commend-lever">'+ data[i].position +'</span>'+
+                            '</div>'+
+                        '</li>'
+
+            }
+            $('.course_box').append(html);
+            $('.start_logo').each(function(){
+                if(!$(this).text()){
+                    $(this).remove()
+                }
+            })
+
+        }
+    })
+
+    // 只在指定版块下显示课程
+    if($('#course_all_bbs').length > 0){
+       //"全部"列表页每三条插入一条学院数据
+       $.ajax({
+           url: ELECFANS_t + '/api/webinarRelationForum?fid='+ $("#course_all_bbs").attr("data-fid") +'&type=1',
+           type: 'get',
+           dataType: "jsonp",
+           data: {
+               format: 'jsonp'
+           },
+           success: function(res){
+               if(res.status === "successed"){
+                   var html = "";
+                   var style = '<style>.course_box_201905 li{border-bottom: 1px dashed #e4e4e4;padding: 15px 0px 20px 0;box-sizing: border-box;margin-bottom: 7px;}'+
+                                   '.course_box_201905 .commend_tit{position: relative;font-size: 16px;font-family: "Arial Negreta", "Arial Normal", "Arial";font-weight: 400;}'+
+                                   '.course_box_201905 .commend_tit a{margin-bottom: 10px; color: #333 !important}'+
+                                   '.course_box_201905 .course_tags a{display: inline-block;font-weight: normal;font-size: 12px;color: #666;margin-left: 10px;background-color: #f4e1e1;padding: 0;border: 1px solid #f4e1e1;padding: 1px 5px;}'+
+                                   '.ml10{margin-left: 10px;}'+
+                                   '.course_box_201905 .commend_detail{padding-left: 50px;color: #999}'+
+                                   '.course_box_201905 .commend_tit{padding-left: 50px}'+
+                               '</style>'
+                   $("body").append(style)
+                   $("#separatorline").nextAll("tbody").each(function(index, el) {
+                       if(index != 0 && $(this).attr("id") != "separatorline" && index%3 == 0){            //id为separatorline下面的都是正常贴，置顶帖不插入学院数据
+                           var data = "";
+                           switch (res.data.list.length) {
+                               case 1:
+                                   data = res.data.list[index-3];                      //获取学院对应数据
+                                   // statements_1
+                                   break;
+                                case 2:
+                                    data = res.data.list[index-2];                     
+                                    // statements_1
+                                    break;
+                               default:
+                                    data = res.data.list[index-1]; 
+                                   // statements_def
+                                   break;
+                           }
+                           if(data){
+                                var tags = [];
+                                if(data.tags && data.tags.length > 0){
+                                    for (var j = 0; j < data.tags.length; j++) {
+                                         tags.push('<a href="http://www.elecfans.com/tags/'+ data.tags[j] +'/" target="_blank">'+data.tags[j]+'</a>')
+                                    }
+                                }
+                               html = '<ul class="course_box_201905">'+
+                                           '<li>'+
+                                           '<div class="widget-vote">'+
+                                               '<a class="com_dianzan">'+
+                                                   '<em class="icon"> <img src="/template/elecfans_201805/images/zl_icon/zhichi.png"></em>'+
+                                                   '<span id="review_support_" style=" color: #999;font-size: 14px;position: relative;top: -2px;">'+
+                                                   data.people_count_txt +'</span>'+
+                                               '</a>'+
+                                           '</div>'+
+                                               '<div class="commend_tit">'+
+                                                   '<div class="course_tags_box">'+
+                                                       '<a href="'+ data.url +'?elecfans_trackid=bbs_list" target="_blank">'+ data.title +'</a>'+
+                                                       '<span class="course_tags">'+
+                                                           tags.join(" ")+
+                                                       '</span>'+
+                                                   '</div>'+
+                                               '</div>'+
+                                               '<div class="commend_detail fixclear">'+
+                                                   '<span>讲师：</span><span>'+ data.name +'</span><span class="ml10 ml-10">'+ data.people_count +'人学习</span>'+
+                                               '</div>'+
+                                           '</li>'+
+                                       '</ul>'
+                                $("#separatorline").nextAll("tbody").eq(index-1).append(html)
+                            }
+
+                       }
+                   });
+               }
+           }
+       }) 
+    }
+    
+})(jq)
