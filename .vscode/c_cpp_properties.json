@@ -9,7 +9,7 @@
                 "C:\\Users\\Debug\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
                 "C:\\Users\\Debug\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.2\\**",
                 "C:\\Users\\Debug\\Documents\\Arduino\\libraries\\blinker-library-master\\src",
-                ""
+                "C:\\Users\\Debug\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel-master"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
@@ -17,7 +17,7 @@
                     "c:/Users/Debug/Documents/PlatformIO/Projects/ESP8266ToSmartRoom/include",
                     "c:/Users/Debug/Documents/PlatformIO/Projects/ESP8266ToSmartRoom/src",
                     "C:\\Users\\Debug\\Documents\\Arduino\\libraries\\blinker-library-master\\src",
-                    ""
+                    "C:\\Users\\Debug\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel-master"
                 ]
             },
             "defines": [

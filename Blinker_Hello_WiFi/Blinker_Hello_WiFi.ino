@@ -44,12 +44,10 @@
  * *****************************************************************/
 
 #define BLINKER_WIFI
-
 #include <Blinker.h>
-#include"hz.c"
 
-char auth[] = "52ab6bcfe67b";
-char ssid[] = hz[0];
+char auth[] = "c32bfc5d3b48";
+char ssid[] = "test";
 char pswd[] = "TF06680668";
 
 // 新建组件对象
