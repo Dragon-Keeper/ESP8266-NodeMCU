@@ -44,6 +44,7 @@
  * *****************************************************************/
 
 #define BLINKER_WIFI
+#define BLINKER_MIOT_LIGHT		//添加这一行，就能支持小爱控制
 #include <Blinker.h>
 
 char auth[] = "c32bfc5d3b48";
