@@ -10,12 +10,17 @@
                 "C:\\Users\\Debug\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.3\\**",
                 "C:\\Users\\Debug\\Documents\\Arduino\\libraries\\blinker-library-master\\src",
                 "C:\\Users\\Debug\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.3\\libraries\\**"
+                "C:\\Program Files (x86)\\Arduino\\tools\\**",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
+                "C:\\Users\\Debug\\Documents\\Arduino\\libraries\\blinker-library-master\\src",
+                ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
                     "C:\\Users\\Debug\\Documents\\Arduino\\libraries\\blinker-library-master\\src",
                     "C:\\Users\\Debug\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.3\\libraries\\**"
+                    ""
                 ]
             },
             "defines": [
@@ -48,6 +53,7 @@
             ],
             "forcedInclude": [
                 "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\arduino.h"
+                "C:\\Users\\Debug\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.3\\cores\\esp8266\\Arduino.h"
             ]
         }
     ],
