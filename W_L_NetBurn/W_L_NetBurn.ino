@@ -11,7 +11,7 @@ int count = 0;
 bool WIFI_Status = true;
 char auth[] = "8520021e8f7c";  //你的设备key
 int GPIO = 0;//定义GPIO口用于控制继电器
-int ledPin = 2; // GPIO2 of ESP8266-01S
+int ledPin = 2; //通过闪烁的快慢提示是否连上WiFi（未连上：快速闪烁；已连上：3秒一次）
 
 #define BUTTON_1 "ButtonKey"
 
@@ -27,6 +27,10 @@ void smartConfig()//配网函数
   {
     //等待过程中一秒打印一个.
     Serial.print(".");
+    digitalWrite(ledPin, LOW);
+    delay(500);           
+    digitalWrite(ledPin, HIGH);
+    delay(500); 
     delay(1000);                                             
     if (WiFi.smartConfigDone())//获取到之后退出等待
     {
@@ -34,6 +38,10 @@ void smartConfig()//配网函数
       //打印获取到的wifi名称和密码
       Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
       Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
+      digitalWrite(ledPin, LOW);
+      delay(1000);           
+      digitalWrite(ledPin, HIGH);
+      delay(3000); 
       break;
     }
   }
@@ -41,7 +49,7 @@ void smartConfig()//配网函数
 
 void WIFI_Init()
 {
-    Serial.println("\r\n正在连接");
+    Serial.println("\r\nConnecting");
     //当设备没有联网的情况下，执行下面的操作
     while(WiFi.status()!=WL_CONNECTED)
     {
@@ -53,7 +61,11 @@ void WIFI_Init()
             if(count>=5)
             {
                 WIFI_Status = false;
-                Serial.println("WiFi连接失败，请用手机进行配网"); 
+                Serial.println("WiFi connect fail,please config by phone"); 
+                digitalWrite(ledPin, LOW);
+                delay(1000);           
+                digitalWrite(ledPin, HIGH);
+                delay(1000);  
             }
         }
         else//使用flash中的信息去连接wifi失败，执行
@@ -62,9 +74,13 @@ void WIFI_Init()
         }
      }  
      //串口打印连接成功的IP地址
-     Serial.println("连接成功");  
+     Serial.println("Connected");  
      Serial.print("IP:");
      Serial.println(WiFi.localIP());
+     digitalWrite(ledPin, LOW);
+     delay(1000);           
+     digitalWrite(ledPin, HIGH);
+     delay(3000);  
 }
 
 void button1_callback(const String & state)
@@ -92,7 +108,6 @@ void miotPowerState(const String & state)
     }
 }
 
-
 void setup() {
     Serial.begin(115200);
     pinMode(ledPin, OUTPUT);
@@ -111,11 +126,28 @@ void setup() {
 void loop()
 {
     Blinker.run();
-    digitalWrite(ledPin, HIGH);
-    delay(1000);           
-    digitalWrite(ledPin, LOW);
-    delay(1000);  
+    //digitalWrite(ledPin, HIGH);
+    //delay(1000);           
+    //digitalWrite(ledPin, LOW);
+    //delay(1000);  
+    WiFi.status()!=WL_CONNECTED;
+    if(WIFI_Status = false)//WIFI连接失败
+    {
+        WIFI_Status = false;
+        Serial.println("WiFi fail,The light flashes every 0.5 seconds."); 
+        digitalWrite(ledPin, LOW);
+        delay(1000);           
+        digitalWrite(ledPin, HIGH);
+        delay(1000);  
+     }
+    else//使用flash中的信息去连接wifi失败，执行
+    {
+        Serial.println("Connected,The light flashes every 3 seconds.");  
+        Serial.print("IP:");
+        Serial.println(WiFi.localIP()); //串口打印连接成功的IP地址
+        digitalWrite(ledPin, LOW);
+        delay(1000);           
+        digitalWrite(ledPin, HIGH);
+        delay(3000);  
+        }
 }
-
-
-
