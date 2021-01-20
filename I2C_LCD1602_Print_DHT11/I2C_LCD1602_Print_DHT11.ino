@@ -36,7 +36,7 @@ void loop()
 {
   Serial.println("/n");
    // 两次检测之间，要等几秒钟，这个传感器有点慢。
-  delay(2000);
+  delay(500);
   // 读温度或湿度要用250毫秒
   float h = dht.readHumidity();//读湿度
   float t = dht.readTemperature();//读温度，默认为摄氏度
@@ -59,5 +59,5 @@ void loop()
   lcd.setCursor(12,1); //设置显示指针,第二行第12个显示位开始显示
   lcd.print(t);
   //lcd.print("         by L.L.");
-  delay(1000);  
+  delay(500);  
 }
