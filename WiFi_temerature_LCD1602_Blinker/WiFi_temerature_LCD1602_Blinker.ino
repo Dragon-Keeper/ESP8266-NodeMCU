@@ -177,7 +177,7 @@ void loop()
 {
   Serial.println("/n");
    // 两次检测之间，要等几秒钟，这个传感器有点慢。
-  delay(2000);
+  delay(500);
   // 读温度或湿度要用250毫秒
   float h = dht.readHumidity();//读取DHT11传感器的湿度    并赋值给h
   float t = dht.readTemperature();//读取传感器的摄氏温度  并赋值给t
@@ -196,14 +196,16 @@ void loop()
   Serial.print(t);
   lcd.clear();
   lcd.setCursor(0,0); //设置显示指针,第一行第一个显示位
-  lcd.print("Humidity:");
+  lcd.print("T&H:");
+  lcd.setCursor(4,0);//设置显示指针,第一行第4个显示位开始显示
+  lcd.print(t,0);
+  lcd.setCursor(7,0);//设置显示指针,第一行第9个显示位开始显示
+  lcd.print("&");
   lcd.setCursor(9,0);//设置显示指针,第一行第9个显示位开始显示
-  lcd.print(h);
-  lcd.setCursor(0,1);//设置显示指针,第二行第一个显示位
-  lcd.print("Temperature:");
-  lcd.setCursor(12,1); //设置显示指针,第二行第12个显示位开始显示
-  lcd.print(t);
-  delay(1000);  
+  lcd.print(h,0); //后面的数字表示显示小数点的位数，0表示不显示
+  lcd.setCursor(11,0);//设置显示指针,第一行第12个显示位开始显示
+  lcd.print("%");
+  delay(500);  
   Blinker.run();
   WiFi.status()!=WL_CONNECTED;
   if(WIFI_Status = false)//WIFI连接失败
@@ -211,9 +213,9 @@ void loop()
       WIFI_Status = false;
       Serial.println("WiFi fail,The light flashes every 0.5 seconds."); 
       digitalWrite(ledPin, LOW);
-      delay(1000);           
+      delay(500);           
       digitalWrite(ledPin, HIGH);
-      delay(1000);  
+      delay(500);  
    }
   else//使用flash中的信息去连接wifi失败，执行
   {
