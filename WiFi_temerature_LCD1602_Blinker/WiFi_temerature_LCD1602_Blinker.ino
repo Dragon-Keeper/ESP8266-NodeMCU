@@ -1,6 +1,18 @@
 // REQUIRES the following Arduino libraries:
 // - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
 // - Adafruit Unified Sensor Lib: https://github.com/adafruit/Adafruit_Sensor
+ /* Typical pin layout used:
+ *             LCD1602     NodeMCU 8266 LoLin V3
+ * Signal      Pin          Pin           
+ * -------------------------------------         
+ * SPI SS      SDA         D2           
+ * SPI SCL     SCL         D1
+ * -----------------------------------------------------------------------------------------
+ *            DHT11     NodeMCU 8266 LoLin V3
+ * Signal      Pin          Pin           
+ * -------------------------------------         
+ * SPI SS      SDA         D6   
+ */
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h> //引用I2C库
 #include <DHT.h>
@@ -21,13 +33,13 @@ BlinkerNumber HUMI("humi");    //定义湿度数据键名
 BlinkerNumber TEMP("temp");    //定义温度数据键名
 float humi_read = 0, temp_read = 0;//定义浮点型全局变量 储存传感器读取的温湿度数据
 
-#define DHTPIN 12 // Digital pin connected to the DHT sensor
+#define DHTPIN 12 // 接NodeMCU D6 获取温湿度数据 Digital pin connected to the DHT sensor
 //定义类型，DHT11或者其它
 #define DHTTYPE DHT11
 //进行初始设置 
 DHT dht(DHTPIN, DHTTYPE);
 //设置LCD1602设备地址，这里的地址是0x3F，一般是0x20，或者0x27，具体看模块手册
-LiquidCrystal_I2C lcd(0x3F,16,2);  
+LiquidCrystal_I2C lcd(0x3F,16,2); 
 
 // Connect pin 1 (on the left) of the sensor to +5V
 // NOTE: If using a board with 3.3V logic like an Arduino Due connect pin 1
