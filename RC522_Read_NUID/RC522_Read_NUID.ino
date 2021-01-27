@@ -4,12 +4,17 @@
               Reader/PCD   Uno/101  Wemos D1 mini  Nano v3    Leonardo/Micro   Pro Micro
   Signal      Pin          Pin           Pin       Pin        Pin              Pin
   -----------------------------------------------------------------------------------------
-  RST/Reset   RST          9             D3         D9         RESET/ICSP-5     RST
-  SPI SS      SDA(SS)      10            D8        D10        10               10
-  SPI MOSI    MOSI         11 / ICSP-4   D7        D11        ICSP-4           16
-  SPI MISO    MISO         12 / ICSP-1   D6        D12        ICSP-1           14
-  SPI SCK     SCK          13 / ICSP-3   D5        D13        ICSP-3           15
-  SPI IRQ     IRQ          7             D4
+  RST/Reset   RST          9             D3 / 0    D9         RESET/ICSP-5     RST
+  SPI SS      SDA(SS)      10            D8 / 15   D10        10               10
+  SPI MOSI    MOSI         11 / ICSP-4   D7 / 13   D11        ICSP-4           16
+  SPI MISO    MISO         12 / ICSP-1   D6 / 12   D12        ICSP-1           14
+  SPI SCK     SCK          13 / ICSP-3   D5 / 14   D13        ICSP-3           15
+  SPI IRQ     IRQ          7             D4 / 2
+  1. 时钟(SPI CLK, SCLK) 
+  2. 片选(CS) 
+  3. 主机输出、从机输入(MOSI) 
+  4. 主机输入、从机输出(MISO) 产生时钟信号的器件称为主机。
+  5. IRQ中断才用到的，没有用到可以不接。
   -----------------------------------------------------------------------------------------
 
               LCD1602     NodeMCU 8266 LoLin V3
