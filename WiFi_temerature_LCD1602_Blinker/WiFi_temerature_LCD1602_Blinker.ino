@@ -64,10 +64,10 @@ void smartConfig()//配网函数
     //等待过程中一秒打印一个.
     Serial.print(".");
     digitalWrite(ledPin, LOW);
-    delay(500);           
+    Blinker.delay(500);           
     digitalWrite(ledPin, HIGH);
-    delay(500); 
-    delay(1000);                                             
+    Blinker.delay(500); 
+    Blinker.delay(1000);                                             
     if (WiFi.smartConfigDone())//获取到之后退出等待
     {
       Serial.println("SmartConfig Success");
@@ -75,9 +75,9 @@ void smartConfig()//配网函数
       Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
       Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
       digitalWrite(ledPin, LOW);
-      delay(1000);           
+      Blinker.delay(1000);           
       digitalWrite(ledPin, HIGH);
-      delay(3000); 
+      Blinker.delay(3000); 
       break;
     }
   }
@@ -92,16 +92,16 @@ void WIFI_Init()
         if(WIFI_Status)//WIFI_Status为真,尝试使用flash里面的信息去连接路由器
         {
             Serial.print(".");
-            delay(1000);                                        
+            Blinker.delay(1000);                                        
             count++;
             if(count>=5)
             {
                 WIFI_Status = false;
                 Serial.println("WiFi connect fail,please config by phone"); 
                 digitalWrite(ledPin, LOW);
-                delay(1000);           
+                Blinker.delay(1000);           
                 digitalWrite(ledPin, HIGH);
-                delay(1000);  
+                Blinker.delay(1000);  
             }
         }
         else//使用flash中的信息去连接wifi失败，执行
@@ -114,9 +114,9 @@ void WIFI_Init()
      Serial.print("IP:");
      Serial.println(WiFi.localIP());
      digitalWrite(ledPin, LOW);
-     delay(1000);           
+     Blinker.delay(1000);           
      digitalWrite(ledPin, HIGH);
-     delay(3000);  
+     Blinker.delay(3000);  
 }
 
 void button1_callback(const String & state)
@@ -189,7 +189,7 @@ void loop()
 {
   Serial.println("/n");
    // 两次检测之间，要等几秒钟，这个传感器有点慢。
-  delay(500);
+  Blinker.delay(500);
   // 读温度或湿度要用250毫秒
   float h = dht.readHumidity();//读取DHT11传感器的湿度    并赋值给h
   float t = dht.readTemperature();//读取传感器的摄氏温度  并赋值给t
@@ -217,7 +217,7 @@ void loop()
   lcd.print(h,0); //后面的数字表示显示小数点的位数，0表示不显示
   lcd.setCursor(11,0);//设置显示指针,第一行第12个显示位开始显示
   lcd.print("%");
-  delay(500);  
+  Blinker.delay(500);  
   Blinker.run();
   WiFi.status()!=WL_CONNECTED;
   if(WIFI_Status = false)//WIFI连接失败
@@ -225,9 +225,9 @@ void loop()
       WIFI_Status = false;
       Serial.println("WiFi fail,The light flashes every 0.5 seconds."); 
       digitalWrite(ledPin, LOW);
-      delay(500);           
+      Blinker.delay(500);           
       digitalWrite(ledPin, HIGH);
-      delay(500);  
+      Blinker.delay(500);  
    }
   else//使用flash中的信息去连接wifi失败，执行
   {
@@ -235,8 +235,8 @@ void loop()
       Serial.print("IP:");
       Serial.println(WiFi.localIP()); //串口打印连接成功的IP地址
       digitalWrite(ledPin, LOW);
-      delay(1000);           
+      Blinker.delay(1000);           
       digitalWrite(ledPin, HIGH);
-      delay(3000);  
+      Blinker.delay(3000);  
       }
 }
