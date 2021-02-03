@@ -59,7 +59,10 @@ void loop()
 {
     Blinker.run();
     digitalWrite(ledPin, HIGH);
-    Blinker.delay(1000);           
+    delay(1000);           
     digitalWrite(ledPin, LOW);
-    Blinker.delay(1000);  
+    delay(1000);  
 }
+
+
+
