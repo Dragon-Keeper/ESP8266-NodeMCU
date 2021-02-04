@@ -1,19 +1,19 @@
 // REQUIRES the following Arduino libraries:
 // - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
 // - Adafruit Unified Sensor Lib: https://github.com/adafruit/Adafruit_Sensor
- /* Typical pin layout used:
- *             LCD1602     NodeMCU 8266 LoLin V3
- * Signal      Pin          Pin           
- * -------------------------------------         
- * SPI SS      SDA         D2           
- * SPI SCL     SCL         D1
- * -----------------------------------------------------------------------------------------
- *            DHT11     NodeMCU 8266 LoLin V3
- * Signal      Pin          Pin           
- * -------------------------------------         
- * SPI SS      SDA         D6   
- */
-#include <Wire.h> 
+/* Typical pin layout used:
+              LCD1602     NodeMCU 8266 LoLin V3
+  Signal      Pin          Pin
+  -------------------------------------
+  SPI SS      SDA         D2
+  SPI SCL     SCL         D1
+  -----------------------------------------------------------------------------------------
+             DHT11     NodeMCU 8266 LoLin V3
+  Signal      Pin          Pin
+  -------------------------------------
+  SPI SS      SDA         D6
+*/
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h> //引用I2C库
 #include <DHT.h>
 #define BLINKER_MIOT_LIGHT
@@ -36,10 +36,10 @@ float humi_read = 0, temp_read = 0;//定义浮点型全局变量 储存传感器
 #define DHTPIN 12 // 接NodeMCU D6 获取温湿度数据 Digital pin connected to the DHT sensor
 //定义类型，DHT11或者其它
 #define DHTTYPE DHT11
-//进行初始设置 
+//进行初始设置
 DHT dht(DHTPIN, DHTTYPE);
 //设置LCD1602设备地址，这里的地址是0x3F，一般是0x20，或者0x27，具体看模块手册
-LiquidCrystal_I2C lcd(0x3F,16,2); 
+LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
 // Connect pin 1 (on the left) of the sensor to +5V
 // NOTE: If using a board with 3.3V logic like an Arduino Due connect pin 1
@@ -64,10 +64,10 @@ void smartConfig()//配网函数
     //等待过程中一秒打印一个.
     Serial.print(".");
     digitalWrite(ledPin, LOW);
-    Blinker.delay(500);           
+    Blinker.delay(500);
     digitalWrite(ledPin, HIGH);
-    Blinker.delay(500); 
-    Blinker.delay(1000);                                             
+    Blinker.delay(500);
+    Blinker.delay(1000);
     if (WiFi.smartConfigDone())//获取到之后退出等待
     {
       Serial.println("SmartConfig Success");
@@ -75,9 +75,9 @@ void smartConfig()//配网函数
       Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
       Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
       digitalWrite(ledPin, LOW);
-      Blinker.delay(1000);           
+      Blinker.delay(1000);
       digitalWrite(ledPin, HIGH);
-      Blinker.delay(3000); 
+      Blinker.delay(3000);
       break;
     }
   }
@@ -85,78 +85,84 @@ void smartConfig()//配网函数
 
 void WIFI_Init()
 {
-    Serial.println("\r\nConnecting");
-    //当设备没有联网的情况下，执行下面的操作
-    while(WiFi.status()!=WL_CONNECTED)
+  Serial.println("\r\nConnecting");
+  //当设备没有联网的情况下，执行下面的操作
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    if (WIFI_Status) //WIFI_Status为真,尝试使用flash里面的信息去连接路由器
     {
-        if(WIFI_Status)//WIFI_Status为真,尝试使用flash里面的信息去连接路由器
-        {
-            Serial.print(".");
-            Blinker.delay(1000);                                        
-            count++;
-            if(count>=5)
-            {
-                WIFI_Status = false;
-                Serial.println("WiFi connect fail,please config by phone"); 
-                digitalWrite(ledPin, LOW);
-                Blinker.delay(1000);           
-                digitalWrite(ledPin, HIGH);
-                Blinker.delay(1000);  
-            }
-        }
-        else//使用flash中的信息去连接wifi失败，执行
-        {
-            smartConfig();  //smartConfig技术配网
-        }
-     }  
-     //串口打印连接成功的IP地址
-     Serial.println("Connected");  
-     Serial.print("IP:");
-     Serial.println(WiFi.localIP());
-     digitalWrite(ledPin, LOW);
-     Blinker.delay(1000);           
-     digitalWrite(ledPin, HIGH);
-     Blinker.delay(3000);  
+      Serial.print(".");
+      Blinker.delay(1000);
+      count++;
+      if (count >= 5)
+      {
+        WIFI_Status = false;
+        Serial.println("WiFi connect fail,please config by phone");
+        digitalWrite(ledPin, LOW);
+        Blinker.delay(1000);
+        digitalWrite(ledPin, HIGH);
+        Blinker.delay(1000);
+      }
+    }
+    else//使用flash中的信息去连接wifi失败，执行
+    {
+      smartConfig();  //smartConfig技术配网
+    }
+  }
+  //串口打印连接成功的IP地址
+  Serial.println("Connected");
+  Serial.print("IP:");
+  Serial.println(WiFi.localIP());
+  digitalWrite(ledPin, LOW);
+  Blinker.delay(1000);
+  digitalWrite(ledPin, HIGH);
+  Blinker.delay(3000);
 }
 
 void button1_callback(const String & state)
 {
-    BLINKER_LOG("get button state: ", state);
-    digitalWrite(GPIO,!digitalRead(GPIO));
-    Blinker.vibrate(); 
+  BLINKER_LOG("get button state: ", state);
+  digitalWrite(GPIO, !digitalRead(GPIO));
+  Blinker.vibrate();
 }
 
 void miotPowerState(const String & state)
 {
-    BLINKER_LOG("need set power state: ",state);
+  BLINKER_LOG("need set power state: ", state);
 
-    if (state == BLINKER_CMD_OFF) {//如果语音接收到是关闭灯就设置GPIO口为高电平
-        digitalWrite(GPIO, HIGH);
+  if (state == BLINKER_CMD_OFF) {//如果语音接收到是关闭灯就设置GPIO口为高电平
+    digitalWrite(GPIO, HIGH);
 
-        BlinkerMIOT.powerState("off");
-        BlinkerMIOT.print();
-    }
-    else if (state == BLINKER_CMD_ON) {
-        digitalWrite(GPIO, LOW);
-        BlinkerMIOT.powerState("on");
-        BlinkerMIOT.print();
-    }
+    BlinkerMIOT.powerState("off");
+    BlinkerMIOT.print();
+  }
+  else if (state == BLINKER_CMD_ON) {
+    digitalWrite(GPIO, LOW);
+    BlinkerMIOT.powerState("on");
+    BlinkerMIOT.print();
+  }
 }
 
 void heartbeat()
 {
-    HUMI.print(humi_read);        //给blinkerapp回传湿度数据
-    TEMP.print(temp_read);        //给blinkerapp回传温度数据
+  HUMI.print(humi_read);        //给blinkerapp回传湿度数据
+  TEMP.print(temp_read);        //给blinkerapp回传温度数据
+}
+
+void dataStorage()  //在回调函数中，设定要存储的键名和值，让Blinker储存温度、湿度数据到服务器
+{
+  Blinker.dataStorage("temp", temp_read);//添加数据存储 以便于图标数据展示
+  Blinker.dataStorage("humi", humi_read);
 }
 
 void miotQuery(int32_t queryCode)      //小爱同学语音命令反馈
 {
-    BLINKER_LOG("MIOT Query codes: ", queryCode);
+  BLINKER_LOG("MIOT Query codes: ", queryCode);
 
-            int humi_read_int=humi_read;     //去掉湿度浮点数
-            BlinkerMIOT.humi(humi_read_int); //小爱反馈湿度属性
-            BlinkerMIOT.temp(temp_read);     //小爱反馈温度属性
-            BlinkerMIOT.print();//将以上属性发送给小爱，使得小爱可以接收到温湿度的数据
+  int humi_read_int = humi_read;   //去掉湿度浮点数
+  BlinkerMIOT.humi(humi_read_int); //小爱反馈湿度属性
+  BlinkerMIOT.temp(temp_read);     //小爱反馈温度属性
+  BlinkerMIOT.print();//将以上属性发送给小爱，使得小爱可以接收到温湿度的数据
 
 }
 
@@ -165,33 +171,32 @@ void setup()
   lcd.init();                  // 初始化LCD
   lcd.backlight();             //设置LCD背景等亮
   Serial.begin(115200);
+  BLINKER_DEBUG.stream(Serial);
+  BLINKER_DEBUG.debugAll();
   dht.begin(); //DHT开始工作
   Serial.println("DHT11 test!");
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
-  pinMode(GPIO,OUTPUT);
-  digitalWrite(GPIO,HIGH);//初始化，由于继电器是低电平触发。所以刚开始设为高电平
+  pinMode(GPIO, OUTPUT);
+  digitalWrite(GPIO, HIGH); //初始化，由于继电器是低电平触发。所以刚开始设为高电平
   // Blinker.begin(auth, ssid, pswd);
   WIFI_Init();//调用WIFI函数
   Blinker.begin(auth, WiFi.SSID().c_str(), WiFi.psk().c_str());//运行blinker
   Button1.attach(button1_callback);
   BlinkerMIOT.attachPowerState(miotPowerState);//这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
-  
-  BLINKER_DEBUG.stream(Serial);
-  BLINKER_DEBUG.debugAll();
   Blinker.attachHeartbeat(heartbeat);//将传感器获取的数据传给blinker app上
-  dht.begin();//初始化DHT传感器
-  //在回调函数中反馈该控制状态
-  BlinkerMIOT.attachQuery(miotQuery);//每次呼出小爱同学，就会调用miotQuery()函数
+  Blinker.attachDataStorage(dataStorage);//关联回调函数，开启历史数据存储功能
+  BlinkerMIOT.attachQuery(miotQuery);//在回调函数中反馈该控制状态，每次呼出小爱同学，就会调用miotQuery()函数
 }
- 
+
 void loop()
 {
-  Serial.println("/n");
-   // 两次检测之间，要等几秒钟，这个传感器有点慢。
+  Blinker.run();
+  Serial.println("");
+  // 两次检测之间，要等几秒钟，这个传感器有点慢。
   Blinker.delay(500);
   // 读温度或湿度要用250毫秒
-  float h = dht.readHumidity();//读取DHT11传感器的湿度    并赋值给h
+  float h = dht.readHumidity();//读取DHT11传感器的湿度   并赋值给h
   float t = dht.readTemperature();//读取传感器的摄氏温度  并赋值给t
   // 检测温度传感器是否工作
   if (isnan(h) || isnan(t)) { //判断是否成功读取到温湿度数据
@@ -199,44 +204,48 @@ void loop()
     return;
   }
   BLINKER_LOG("Humidity: ", h, " %");
-  BLINKER_LOG("Temperature: ", t, " *C");  
+  BLINKER_LOG("Temperature: ", t, " *C");
   humi_read = h;//将读取到的湿度赋值给全局变量humi_read
   temp_read = t;//将读取到的温度赋值给全局变量temp_read
   Serial.print("Humidity: ");//湿度
   Serial.print(h);
   Serial.print("%  Temperature: ");//温度
-  Serial.print(t);
+  Serial.println(t);
   lcd.clear();
-  lcd.setCursor(0,0); //设置显示指针,第一行第一个显示位
+  lcd.setCursor(0, 0); //设置显示指针,第一行第一个显示位
   lcd.print("T&H:");
-  lcd.setCursor(4,0);//设置显示指针,第一行第4个显示位开始显示
-  lcd.print(t,0);
-  lcd.setCursor(7,0);//设置显示指针,第一行第9个显示位开始显示
+  lcd.setCursor(4, 0); //设置显示指针,第一行第4个显示位开始显示
+  lcd.print(t, 0);
+  lcd.setCursor(7, 0); //设置显示指针,第一行第9个显示位开始显示
   lcd.print("&");
-  lcd.setCursor(9,0);//设置显示指针,第一行第9个显示位开始显示
-  lcd.print(h,0); //后面的数字表示显示小数点的位数，0表示不显示
-  lcd.setCursor(11,0);//设置显示指针,第一行第12个显示位开始显示
+  lcd.setCursor(9, 0); //设置显示指针,第一行第9个显示位开始显示
+  lcd.print(h, 0); //后面的数字表示显示小数点的位数，0表示不显示
+  lcd.setCursor(11, 0); //设置显示指针,第一行第12个显示位开始显示
   lcd.print("%");
-  Blinker.delay(500);  
-  Blinker.run();
-  WiFi.status()!=WL_CONNECTED;
-  if(WIFI_Status = false)//WIFI连接失败
+  Blinker.delay(500);
+  WiFi.status() != WL_CONNECTED;
+  if (WIFI_Status = false) //WIFI连接失败
   {
-      WIFI_Status = false;
-      Serial.println("WiFi fail,The light flashes every 0.5 seconds."); 
+    WIFI_Status = false;
+      Serial.println("WiFi fail,The light flashes every 0.5 seconds.");
+      smartConfig();  //smartConfig技术配网
+      /*
       digitalWrite(ledPin, LOW);
-      Blinker.delay(500);           
+      Blinker.delay(500);
       digitalWrite(ledPin, HIGH);
-      Blinker.delay(500);  
-   }
+      Blinker.delay(500);
+    */
+  }
   else//使用flash中的信息去连接wifi失败，执行
   {
-      Serial.println("Connected,The light flashes every 3 seconds.");  
-      Serial.print("IP:");
-      Serial.println(WiFi.localIP()); //串口打印连接成功的IP地址
-      digitalWrite(ledPin, LOW);
-      Blinker.delay(1000);           
-      digitalWrite(ledPin, HIGH);
-      Blinker.delay(3000);  
-      }
+    /*
+    Serial.println("Connected,The light flashes every 3 seconds.");
+    Serial.print("IP:");
+    Serial.println(WiFi.localIP()); //串口打印连接成功的IP地址
+    digitalWrite(ledPin, LOW);
+    Blinker.delay(1000);
+    digitalWrite(ledPin, HIGH);
+    Blinker.delay(3000);
+    */
+  }
 }
