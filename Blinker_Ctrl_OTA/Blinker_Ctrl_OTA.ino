@@ -12,6 +12,7 @@ ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 int relayInput = LED_BUILTIN ;
 int count = 0;
+int count2 = 0;
 bool WIFI_Status = true;
 char auth[] = "8520021e8f7c";  //你的设备key
 int GPIO = 0;//定义GPIO口用于控制继电器
@@ -30,7 +31,7 @@ void smartConfig()//配网函数
   Serial.println("\r\nWait for Smartconfig...");//串口打印
   WiFi.beginSmartConfig();//等待手机端发出的名称与密码
   //死循环，等待获取到wifi名称和密码
-  while (1)
+  while (WiFi.status() != WL_CONNECTED)//当已连接网络连接时退出smartConfig
   {
     //等待过程中一秒打印一个.
     Serial.print(".");
@@ -39,7 +40,6 @@ void smartConfig()//配网函数
     Blinker.delay(500);
     digitalWrite(ledPin, HIGH);
     Blinker.delay(500);
-    Blinker.delay(1000);
     if (WiFi.smartConfigDone())//获取到之后退出等待
     {
       Serial.println("SmartConfig Success");
@@ -47,12 +47,15 @@ void smartConfig()//配网函数
       Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
       Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
       digitalWrite(ledPin, LOW);
-      Blinker.delay(1000);
+      Blinker.delay(500);
       digitalWrite(ledPin, HIGH);
-      Blinker.delay(3000);
+      Blinker.delay(2000);
       break;
     }
   }
+  count2 = 0;//重置count2的值为0，防止第二次断网时直接已经等于6就开始SmartConfig
+  Serial.print("count2 reset:");
+  Serial.println(count2);
 }
 
 void WIFI_Init()
@@ -70,10 +73,10 @@ void WIFI_Init()
       {
         WIFI_Status = false;
         Serial.println("WiFi connect fail,please config by phone");
-        digitalWrite(ledPin, LOW);
-        Blinker.delay(1000);
-        digitalWrite(ledPin, HIGH);
-        Blinker.delay(1000);
+        //digitalWrite(ledPin, LOW);
+        //Blinker.delay(500);
+        //digitalWrite(ledPin, HIGH);
+        //Blinker.delay(500);
       }
     }
     else//使用flash中的信息去连接wifi失败，执行
@@ -85,10 +88,10 @@ void WIFI_Init()
   Serial.println("Connected");
   Serial.print("IP:");
   Serial.println(WiFi.localIP());
-  digitalWrite(ledPin, LOW);
-  Blinker.delay(1000);
-  digitalWrite(ledPin, HIGH);
-  Blinker.delay(3000);
+  //digitalWrite(ledPin, LOW);
+  //Blinker.delay(500);
+  //digitalWrite(ledPin, HIGH);
+  //Blinker.delay(2000);
 }
 
 void button1_callback(const String & state)
@@ -171,32 +174,43 @@ void setup() {
 void loop()
 {
   Blinker.run();
-  /*---------------------这一段用于使用过程中断网后从新联网用
-    WiFi.status() != WL_CONNECTED;
-    if (WIFI_Status = false) //WIFI连接失败
+  //---------------------这一段用于使用过程中断网后从新联网用
+  /*
+     下面这句用来检测网络连接是否成功，WiFi.status()获取网络状态，
+     WL_CONNECTED表示网络连接成功，!= 表示不等于，就是说网络连接状态不成功
+  */
+  if (WiFi.status() != WL_CONNECTED) //WIFI连接失败
+  {
+    count2++;
+    Blinker.delay(1000);
+    Serial.print("count2:");
+    Serial.println(count2);
+    if (count2 >= 6)
     {
-    WIFI_Status = false;
-    Serial.println("WiFi fail,The light flashes every 0.5 seconds.");
-    -----------这段用板载小灯的闪速显示未连接
-      digitalWrite(ledPin, LOW);
-      Blinker.delay(1000);
-      digitalWrite(ledPin, HIGH);
-      Blinker.delay(1000);
-
+      //Serial.print(WiFi.status());
+      //Serial.println("if 3 connected;or 6 disconnect.");
+      Serial.println("WiFi fail,The light flashes every 0.5 seconds.");
+      //-----------这段用板载小灯的闪速显示未连接
+      smartConfig();  //smartConfig技术配网
+      //digitalWrite(ledPin, LOW);
+      //Blinker.delay(500);
+      //digitalWrite(ledPin, HIGH);
+      //Blinker.delay(500);
     }
-    else//使用flash中的信息去连接wifi失败，执行
-    {
-    Serial.println("Connected,The light flashes every 3 seconds.");
-    Serial.print("IP:");
-    Serial.println(WiFi.localIP()); //串口打印连接成功的IP地址
-    -----------这段用板载小灯的闪速显示已连接
-      digitalWrite(ledPin, LOW);
-      Blinker.delay(1000);
-      digitalWrite(ledPin, HIGH);
-      Blinker.delay(3000);
+  }
+  else
+  {
+    //Serial.println("Connected,The light flashes every 3 seconds.");
+    //Serial.print("IP:");
+    //Serial.println(WiFi.localIP()); //串口打印连接成功的IP地址
+    //-----------这段用板载小灯的闪速显示已连接
+    //digitalWrite(ledPin, LOW);
+    //Blinker.delay(500);
+    //digitalWrite(ledPin, HIGH);
+    //Blinker.delay(2000);
 
-    }
-    //---------------------这一段用于使用过程中断网后从新联网用*/
+  }
+  //---------------------这一段用于使用过程中断网后从新联网用*/
   if (flag == 0)
   {
     Serial.println("We Won't Burn.");
@@ -205,11 +219,11 @@ void loop()
   else
   {
     /*
-     * 下面if至while直接这里申请存储tcp设置项user_tcp_conn.proto.tcp，
-     *如果放进while里面循环申请堆空间，而却重来没有释放，就会堆空间溢出而重启系统
-     *相关链接：https://blog.csdn.net/d521000121/article/details/70196896/
-     */
-    if (flag == 1) 
+       下面if至while直接这里申请存储tcp设置项user_tcp_conn.proto.tcp，
+      如果放进while里面循环申请堆空间，而却重来没有释放，就会堆空间溢出而重启系统
+      相关链接：https://blog.csdn.net/d521000121/article/details/70196896/
+    */
+    if (flag == 1)
     {
       Serial.println("Wait For Firmware To Burn.");
       WiFi.mode(WIFI_AP_STA);
@@ -223,18 +237,18 @@ void loop()
       while (flag == 1) //由上面if进入申请建立tcp服务器，这里等待固件上传并更新
       {
         /*
-         * http://www.taichi-maker.com/homepage/iot-development/iot-dev-reference/esp8266-c-plus-plus-reference/esp8266webserver/handleclient/
-         * 此函数主要作用是检查有没有客户端设备通过网络向ESP8266网络服务器发送请求。
-         * 每一次handleClient`函数被调用时，ESP8266网络服务器都会检查一下是否有客
-         * 户端发送HTTP请求。
-         * 
-         * 假如loop函数里有类似delay一类的函数延迟程序运行，那么就一定要注意了。
-         * 如果handleClient函数长时间得不到调用，ESP8266网络服务器会因为无法经常
-         * 检查HTTP客户端请求而导致服务器响应变慢，严重的情况下，会导致服务器工作不稳定。
-         * 
-         * 更多相关链接：
-         * http://www.taichi-maker.com/homepage/esp8266-nodemcu-iot/iot-c/esp8266-nodemcu-web-server/
-         */
+           http://www.taichi-maker.com/homepage/iot-development/iot-dev-reference/esp8266-c-plus-plus-reference/esp8266webserver/handleclient/
+           此函数主要作用是检查有没有客户端设备通过网络向ESP8266网络服务器发送请求。
+           每一次handleClient`函数被调用时，ESP8266网络服务器都会检查一下是否有客
+           户端发送HTTP请求。
+
+           假如loop函数里有类似delay一类的函数延迟程序运行，那么就一定要注意了。
+           如果handleClient函数长时间得不到调用，ESP8266网络服务器会因为无法经常
+           检查HTTP客户端请求而导致服务器响应变慢，严重的情况下，会导致服务器工作不稳定。
+
+           更多相关链接：
+           http://www.taichi-maker.com/homepage/esp8266-nodemcu-iot/iot-c/esp8266-nodemcu-web-server/
+        */
         httpServer.handleClient(); //处理http服务器访问
         Blinker.delay(1000);
       }
