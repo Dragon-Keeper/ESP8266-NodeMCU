@@ -77,10 +77,10 @@ void loop() {
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
     Serial.print(F("PICC type: "));
-    MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak); //读取卡片类型
     Serial.println(mfrc522.PICC_GetTypeName(piccType));
 
-    // Check for compatibility
+    // 根据读取的卡片类型检查兼容性
     if (    piccType != MFRC522::PICC_TYPE_MIFARE_MINI
         &&  piccType != MFRC522::PICC_TYPE_MIFARE_1K
         &&  piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
@@ -88,7 +88,7 @@ void loop() {
         return;
     }
     // 下面代码将dataBlock[]的内容写入覆盖block 4 的内容
-    // In this sample we use the second sector,
+    // In this sample we use the second sector
     // that is: sector #1, covering block #4 up to and including block #7
     byte sector         = 1;
     byte blockAddr      = 4;
@@ -102,7 +102,7 @@ void loop() {
     MFRC522::StatusCode status;
     byte buffer[18];
     byte size = sizeof(buffer);
-  /*---------以下为读取key A，非必要代码
+  //读取key A数据并存入status然后显示出来
     // Authenticate using key A
     Serial.println(F("Authenticating using key A..."));
     status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
@@ -111,8 +111,8 @@ void loop() {
         Serial.println(mfrc522.GetStatusCodeName(status));
         return;
     }
-  -------------------------------------*/
-    // Show the whole sector as it currently is
+
+    // Show the whole sector as it currently is。（显示整个扇区的数据并存入缓存）
     Serial.println(F("Current data in sector:"));
     mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
     Serial.println();
@@ -180,7 +180,7 @@ void loop() {
 
     // Dump the sector data
     Serial.println(F("Current data in sector:"));
-    mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
+    mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector); //写入数据后再次缓存新数据覆盖旧卡已缓存的数据
     Serial.println();
 -----------------------------------------------------------*/
  if(buffer[0]==0x01 && buffer[1]==0x02 && buffer[2]==0x03 && buffer[3]==0x04) 
@@ -203,7 +203,7 @@ void loop() {
 }
 
 /**
- * Helper routine to dump a byte array as hex values to Serial.
+ * Helper routine to dump a byte array as hex values to Serial.（将字节数组转储为串行的十六进制值）
  */
 void dump_byte_array(byte *buffer, byte bufferSize) {
     for (byte i = 0; i < bufferSize; i++) {
