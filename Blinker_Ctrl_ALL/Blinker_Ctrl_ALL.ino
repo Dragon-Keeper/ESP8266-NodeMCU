@@ -246,42 +246,7 @@ void setup()
 void loop()
 {
   Blinker.run();
-  //---------------------这一段用于使用过程中断网后从新联网用
-  /*
-     下面这句用来检测网络连接是否成功，WiFi.status()获取网络状态，
-     WL_CONNECTED表示网络连接成功，!= 表示不等于，就是说网络连接状态不成功
-  */
-  if (WiFi.status() != WL_CONNECTED) //WIFI连接失败
-  {
-    count2++;
-    Blinker.delay(1000);
-    Serial.print("count2:");
-    Serial.println(count2);
-    if (count2 >= 6)
-    {
-      //Serial.print(WiFi.status());
-      //Serial.println("if 3 connected;or 6 disconnect.");
-      Serial.println("WiFi fail,The light flashes every 0.5 seconds.");
-      //-----------这段用板载小灯的闪速显示未连接
-      smartConfig(); //smartConfig技术配网
-      //digitalWrite(ledPin, LOW);
-      //Blinker.delay(500);
-      //digitalWrite(ledPin, HIGH);
-      //Blinker.delay(500);
-    }
-  }
-  else
-  {
-    //Serial.println("Connected,The light flashes every 3 seconds.");
-    //Serial.print("IP:");
-    //Serial.println(WiFi.localIP()); //串口打印连接成功的IP地址
-    //-----------这段用板载小灯的闪速显示已连接
-    //digitalWrite(ledPin, LOW);
-    //Blinker.delay(500);
-    //digitalWrite(ledPin, HIGH);
-    //Blinker.delay(2000);
-  }
-  //---------------------上面这一段用于使用过程中断网后从新联网用*/
+  WIFI_Init(); //直接使用这个函数来检测断网与否以及断网后的重联
   if (OTA == 0)
   {
     Serial.println("We Won't Burn.");
