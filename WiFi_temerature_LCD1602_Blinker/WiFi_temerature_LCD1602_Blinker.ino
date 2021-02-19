@@ -94,7 +94,7 @@ void WIFI_Init()
       Serial.print(".");
       Blinker.delay(1000);
       count++;
-      if (count >= 5)
+      if (count >= 10)
       {
         WIFI_Status = false;
         Serial.println("WiFi connect fail,please config by phone");
@@ -223,29 +223,5 @@ void loop()
   lcd.setCursor(11, 0); //设置显示指针,第一行第12个显示位开始显示
   lcd.print("%");
   Blinker.delay(500);
-  WiFi.status() != WL_CONNECTED;
-  if (WIFI_Status = false) //WIFI连接失败
-  {
-    WIFI_Status = false;
-      Serial.println("WiFi fail,The light flashes every 0.5 seconds.");
-      smartConfig();  //smartConfig技术配网
-      /*
-      digitalWrite(ledPin, LOW);
-      Blinker.delay(500);
-      digitalWrite(ledPin, HIGH);
-      Blinker.delay(500);
-    */
-  }
-  else//使用flash中的信息去连接wifi失败，执行
-  {
-    /*
-    Serial.println("Connected,The light flashes every 3 seconds.");
-    Serial.print("IP:");
-    Serial.println(WiFi.localIP()); //串口打印连接成功的IP地址
-    digitalWrite(ledPin, LOW);
-    Blinker.delay(1000);
-    digitalWrite(ledPin, HIGH);
-    Blinker.delay(3000);
-    */
-  }
+  WIFI_Init(); //直接使用这个函数来检测断网与否以及断网后的重联
 }
