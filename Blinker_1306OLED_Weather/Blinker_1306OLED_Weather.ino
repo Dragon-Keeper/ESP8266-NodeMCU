@@ -20,7 +20,6 @@
 #include <ESP8266WiFi.h>
 #include <Blinker.h>
 
-#include <Arduino.h>
 #include <U8g2lib.h>
 
 #ifdef U8X8_HAVE_SW_SPI
