@@ -387,7 +387,7 @@ void loop()
             //这里写入如果号码对的话如何操作--可以用来放按键开门代码----------
             NFC = 1;
             DOOR = 1;
-            Blinker.delay(2000);
+            Blinker.delay(100);
         }
         else
         { //若卡号与上述不符
@@ -395,7 +395,7 @@ void loop()
             //这里写入如果号码不对的话如何操作
             NFC = 0;
             DOOR = 0;
-            Blinker.delay(2000);
+            Blinker.delay(100);
         }
         //-----上面到注释之间内容为判断第四道前四位内容是否相符，符合的话执行相应反馈
         // Halt PICC
