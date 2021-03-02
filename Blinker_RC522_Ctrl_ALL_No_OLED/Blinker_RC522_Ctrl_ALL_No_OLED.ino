@@ -470,13 +470,7 @@ void loop()
         Button3.print("on");
         BLINKER_LOG("已开门"); //串口打印
         servo(95); //调用函数传值直接转90度
-        //用for循环来延时开门动作10秒
-        for (int Door_Count = 0; Door_Count <= 10; Door_Count++)
-        {
-            Blinker.delay(1000);
-            Serial.println(Door_Count);
-            
-        }
+        Blinker.delay(10000); //延时开门动作10秒
         servo(5); //调用函数传值复位为5度
         Button3.icon("fad fa-door-closed");
         Button3.color("#000000"); //2#按钮没有按下时，app按键颜色状态显示是黑色
