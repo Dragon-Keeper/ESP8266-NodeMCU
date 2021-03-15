@@ -8,6 +8,17 @@
 #include <Blinker.h>
 #include <espnow.h>
 
+char auth[] = "62802af66f0d"; //你的设备key
+int relayInput = LED_BUILTIN; //LED_BUILTIN D4
+int ledPin = 2 ;              //通过闪烁的快慢提示是否连上WiFi（未连上：快速闪烁；已连上：3秒一次）
+int GPIO = 0;                 //定义GPIO0用于控制继电器
+int OTA = 0;
+int Light = 0;                //定义Light用于判断开灯与否
+#define BUTTON_1 "Light_Key1"
+#define BUTTON_2 "BurnKey"
+BlinkerButton Button1("Light_Key1"); //这里需要根据自己在BLINKER里面设置的名字进行更改
+BlinkerButton Button2("BurnKey");    //这里需要根据自己在BLINKER里面设置的名字进行更改
+
 // Structure example to receive data
 // Must match the sender structure
 typedef struct struct_message {
@@ -16,8 +27,6 @@ typedef struct struct_message {
 
 // Create a struct_message called myData
 struct_message myData;
-
-int Light = 0;                //定义Light用于判断开灯与否
 
 // Callback function that will be executed when data is received
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
@@ -28,21 +37,33 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
   Serial.print("Light Is:");
   Serial.println(Light);
   Serial.println();
+  if (Light == 0)
+  {
+    Serial.println("Light Is Close.");
+    digitalWrite(GPIO, HIGH);
+    Button1.icon("fal fa-lightbulb");
+    Button1.color("#000000"); //2#按钮没有按下时，app按键颜色状态显示是黑色
+    // 反馈开关状态
+    Button1.text("已关灯");
+    Button1.print("off");
+    BLINKER_LOG("1#灯已关灯off");
+  }
+  else
+  {
+    Serial.println("Light Is On.");
+    digitalWrite(GPIO, LOW);
+    Button1.icon("fal fa-lightbulb-on");
+    Button1.color("#FF0000"); //1#按钮按下时，app按键颜色状态显示是红色
+    // 反馈开关状态
+    Button1.text("已开灯");
+    Button1.print("on");
+    BLINKER_LOG("1#灯已开灯on"); //串口打印
+  }
 }
 
 const char *host = "My ESP8266 Server";
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
-
-char auth[] = "ee69c8793143"; //你的设备key
-int relayInput = LED_BUILTIN; //LED_BUILTIN D4
-int ledPin = 2 ;              //通过闪烁的快慢提示是否连上WiFi（未连上：快速闪烁；已连上：3秒一次）
-int GPIO = D0;                 //定义GPIO0用于控制继电器
-int OTA = 0;
-#define BUTTON_1 "Light_Key1"
-#define BUTTON_2 "BurnKey"
-BlinkerButton Button1("Light_Key1"); //这里需要根据自己在BLINKER里面设置的名字进行更改
-BlinkerButton Button2("BurnKey");    //这里需要根据自己在BLINKER里面设置的名字进行更改
 
 void smartConfig() //配网函数
 {
@@ -215,31 +236,8 @@ void loop()
 {
   Blinker.run();
   WIFI_Init(); //直接使用这个函数来检测断网与否以及断网后的重联
-  Serial.print("Light Is:");
-  Serial.println(Light);
-  if (Light == 0)
-  {
-    Serial.println("Light Is Close.");
-    digitalWrite(GPIO, HIGH);
-    Button1.icon("fal fa-lightbulb");
-    Button1.color("#000000"); //2#按钮没有按下时，app按键颜色状态显示是黑色
-    // 反馈开关状态
-    Button1.text("已关灯");
-    Button1.print("off");
-    BLINKER_LOG("1#灯已关灯off");
-  }
-  else
-  {
-    Serial.println("Light Is On.");
-    digitalWrite(GPIO, LOW);
-    Button1.icon("fal fa-lightbulb-on");
-    Button1.color("#FF0000"); //1#按钮按下时，app按键颜色状态显示是红色
-    // 反馈开关状态
-    Button1.text("已开灯");
-    Button1.print("on");
-    BLINKER_LOG("1#灯已开灯on"); //串口打印
-  }
-
+  //Serial.print("Light Is:");
+  //Serial.println(Light);
   if (OTA == 0)
   {
     Serial.println("We Won't Burn.");
