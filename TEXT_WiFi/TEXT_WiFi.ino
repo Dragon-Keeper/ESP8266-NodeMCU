@@ -15,8 +15,6 @@ BlinkerText Text1(TEXTE_1);
 
 void dataRead(const String & data)
 {
-  BLINKER_LOG("Blinker readString: ", data);
-  Blinker.vibrate();
   Text1.print(WiFi.localIP().toString(),"/update");
 }
 
@@ -31,4 +29,5 @@ void setup()
 void loop()
 {
   Blinker.run();
+  blinker.delay(100);
 }
