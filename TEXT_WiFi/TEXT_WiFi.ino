@@ -29,5 +29,6 @@ void setup()
 void loop()
 {
   Blinker.run();
-  blinker.delay(100);
+  Blinker.delay(100);
+  Serial.println(ESP.getFreeHeap()); //获取可用堆大小
 }
