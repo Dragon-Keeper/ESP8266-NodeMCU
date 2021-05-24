@@ -30,6 +30,8 @@
   SPI SS      SDA         D2
   SPI SCL     SCL         D3
   -----------------------------------------------------------------------------------------
+添加设备时，请选择 阿里云broker，点灯broker暂不支持语音控制
+喊“小爱同学，打开/关闭台灯”（这里台灯是设置的设备名，可在blinker中修改）
 */
 #include <SPI.h>
 #include <MFRC522.h>
@@ -42,7 +44,6 @@
 #include <ESP8266WiFi.h>
 #include <Blinker.h>
 #include <espnow.h>
-
 
 //启用非加密通信，获得更大的可用ram，不然8266ram不够就会重启。
 //目前仅可用于ESP8266，其他设备的RAM足以进行加密通信
@@ -76,8 +77,8 @@ ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
 char auth[] = "8520021e8f7c"; //你的设备key
-int relayInput = LED_BUILTIN; //LED_BUILTIN D4
-int ledPin = 2;               //通过闪烁的快慢提示是否连上WiFi（未连上：快速闪烁；已连上：3秒一次）
+//int relayInput = LED_BUILTIN; //LED_BUILTIN D4
+int ledPin = LED_BUILTIN;     //通过闪烁的快慢提示是否连上WiFi（未连上：快速闪烁；已连上：3秒一次）
 int Light = 0;                //定义Light用于判断开灯与否
 int count2 = 120;             //定义count2用于计算等待SmartConfig超时重启
 int OTA = 0;                  //定义OTA用于控制OTA与否
@@ -184,7 +185,9 @@ void WIFI_Init()
     {
       //Serial.printf("Wait For Connecting %u \n", count);
       digitalWrite(ledPin, LOW);
-      Blinker.delay(1000);
+      Blinker.delay(100);
+      digitalWrite(ledPin, HIGH);
+      Blinker.delay(800);
     }
     //Serial.println(WiFi.localIP());
     if (WiFi.status() != WL_CONNECTED) //如果还是没有连接上网络
@@ -289,23 +292,29 @@ void button3_callback(const String &state)
 void miotPowerState(const String &state)
 {
   //BLINKER_LOG("need set power state: ", state);
-
   if (state == BLINKER_CMD_OFF)
   {
+    Light = 0;
+    myData.b = Light;
+    // Send message via ESP-NOW
+    esp_now_send(broadcastAddress, (uint8_t *)&myData, sizeof(myData));
     BlinkerMIOT.powerState("off");
     BlinkerMIOT.print();
   }
   else if (state == BLINKER_CMD_ON)
   {
+    Light = 1;
+    myData.b = Light;
+    // Send message via ESP-NOW
+    esp_now_send(broadcastAddress, (uint8_t *)&myData, sizeof(myData));
     BlinkerMIOT.powerState("on");
     BlinkerMIOT.print();
   }
 }
-
+/*
 void miotPowerState1(const String &state)
 {
   //BLINKER_LOG("need set OTA state: ", state);
-
   if (state == BLINKER_CMD_OFF)
   {
     BlinkerMIOT.powerState("off");
@@ -321,7 +330,6 @@ void miotPowerState1(const String &state)
 void miotPowerState2(const String &state)
 {
   //BLINKER_LOG("need set Door state: ", state);
-
   if (state == BLINKER_CMD_OFF)
   {
     BlinkerMIOT.powerState("off");
@@ -333,7 +341,7 @@ void miotPowerState2(const String &state)
     BlinkerMIOT.print();
   }
 }
-
+*/
 //上传剩余内存数据
 void heartbeat()
 {
@@ -386,9 +394,9 @@ void setup()
   Button1.attach(button1_callback);
   Button2.attach(button2_callback);
   Button3.attach(button3_callback);
-  BlinkerMIOT.attachPowerState(miotPowerState);  //这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
-  BlinkerMIOT.attachPowerState(miotPowerState1); //这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
-  BlinkerMIOT.attachPowerState(miotPowerState2); //这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
+  BlinkerMIOT.attachPowerState(miotPowerState);  //注册小爱电源回调
+  //BlinkerMIOT.attachPowerState(miotPowerState1); //这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
+  //BlinkerMIOT.attachPowerState(miotPowerState2); //这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
   Blinker.attachHeartbeat(heartbeat);            //将传感器获取的数据传给blinker app上
   Blinker.attachDataStorage(dataStorage);        //关联回调函数，开启历史数据存储功能
 
@@ -418,6 +426,7 @@ void loop()
   WIFI_Init(); //直接使用这个函数来检测断网与否以及断网后的重联
   //Serial.println(ESP.getFreeHeap()); //获取可用堆大小
   W_D_LiveTime = W_D_LiveTime + 1;
+  Serial.println(W_D_LiveTime);
   //串口输出数据和Blinker.print下一句要加上Blinker.delay(33);
   //加上延时解决串口打印导致的EXCEPTION (29)(28)错误导致复位重启问题
   Blinker.delay(200);
@@ -582,6 +591,9 @@ void loop()
 
   Blinker.delay(200);
   /* 自锁开关控制灯，但是控制逻辑还没想通
+   *  
+   *  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+   *  
     ButtonState = digitalRead(L_Button);
     if (ButtonState != ButtonLastState)
     {

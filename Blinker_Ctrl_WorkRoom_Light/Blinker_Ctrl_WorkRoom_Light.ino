@@ -212,16 +212,18 @@ void miotPowerState(const String &state)
 
   if (state == BLINKER_CMD_OFF)
   {
+    digitalWrite(GPIO, HIGH);
     BlinkerMIOT.powerState("off");
     BlinkerMIOT.print();
   }
   else if (state == BLINKER_CMD_ON)
   {
+    digitalWrite(GPIO, LOW);
     BlinkerMIOT.powerState("on");
     BlinkerMIOT.print();
   }
 }
-
+/*
 void miotPowerState1(const String &state)
 {
   //BLINKER_LOG("need set OTA state: ", state);
@@ -237,7 +239,7 @@ void miotPowerState1(const String &state)
     BlinkerMIOT.print();
   }
 }
-
+*/
 //上传剩余内存数据
 void heartbeat()
 {
@@ -297,8 +299,8 @@ void setup()
   Blinker.begin(auth, WiFi.SSID().c_str(), WiFi.psk().c_str()); //运行blinker
   Button1.attach(button1_callback);
   Button2.attach(button2_callback);
-  BlinkerMIOT.attachPowerState(miotPowerState);  //这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
-  BlinkerMIOT.attachPowerState(miotPowerState1); //这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
+  BlinkerMIOT.attachPowerState(miotPowerState);  //注册小爱电源回调
+  //BlinkerMIOT.attachPowerState(miotPowerState1); //这段代码一定要加，不加小爱同学控制不了,务必在回调函数中反馈该控制状态
   Blinker.attachHeartbeat(heartbeat);            //将传感器获取的数据传给blinker app上
   Blinker.attachDataStorage(dataStorage);        //关联回调函数，开启历史数据存储功能
 
